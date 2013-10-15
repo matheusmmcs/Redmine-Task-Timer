@@ -1,8 +1,13 @@
 (function($){
-	console.log("TESTE", $('#c-btn-professor'));
-	console.log("TESTE", $('#c-btn-professor').length);
-	//var document.getElementById("time_entry_hours")
-	//
+	var elem = document.getElementById("time_entry_hours");
+	var hours = 0;
+	
+	var timer = setInterval(function(){
+		hours+=1000;
+		$(elem).val((hours/3600).toFixed(3));
+	}, 1000);
+
+	//clearInterval(int)
 
 	//inserir o contador e enviar pro plugin qual tarefa foi iniciada
 	/*

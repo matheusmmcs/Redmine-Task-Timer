@@ -1,17 +1,60 @@
+//Prototypes
+Array.prototype.contains = function(o){
+	if(this.indexOf(o)!=-1){
+		return true;
+	}else{
+		return false;
+	}
+}
+Array.prototype.add = function(o){
+	if(!this.contains(o)){
+		this.push(o);
+	}
+}
+Array.prototype.remove = function(i){
+	if(i<this.length){
+		this.splice(i,1);
+	}
+}
+Array.prototype.removeElement = function(o){
+	if(this.contains(o)){
+		var index = this.indexOf(o);
+		this.splice(index,1);
+	}
+}
+Array.prototype.removeBetween = function(from, to){
+	var dif = to - from + 1;
+	if(from>=0 && to<this.length && dif>0){
+		this.splice(from,dif);
+	}	
+}
+Array.prototype.toConsole = function(){
+	for(var i in this){
+		if(new String(this[i]).indexOf("function")==-1){
+			console.log("["+i+"]->"+this[i]+";");
+		}
+	}
+}
+
+//GLOBAL VARS (defined in options.html)
+var domain = "redmine.infoway-pi.com.br";
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab, c) {
 	chrome.tabs.query({
-	    "currentWindow": true,
 	    "status": "complete",
 	    "windowType": "normal",
+	    //"currentWindow": true,
 	    //"active": true
 	}, function (tabs) {
 	    for (i in tabs) {
 	    	var tab = tabs[i];
 	    	if(tab && tab.id == tabId){
-	    		chrome.tabs.executeScript(tabId, {file: "js/jquery.js"});
-				chrome.tabs.executeScript(tabId, {file: "js/counter.js"});
-				//chrome.tabs.insertCSS(tabId, {file: "css/topoteste.css"});
+	    		//contains the redmine domain
+	    		if(tab.url.indexOf(domain)){
+	    			chrome.tabs.executeScript(tabId, {file: "js/jquery.js"});
+					chrome.tabs.executeScript(tabId, {file: "js/counter.js"});
+					//chrome.tabs.insertCSS(tabId, {file: "css/topoteste.css"});
+	    		}
 	    	}
 	    }
 	});
@@ -65,10 +108,6 @@ function openPage(page) {
             chrome.tabs.create({url:options_url});
     });
 }
-
-chrome.commands.onCommand.addListener(function(command) {
-  console.log('onCommand event received for message: ', command);
-});
 
 //----------------------------------------------------------------------------------------------------------------------------------------------
 /*método genérico para realizar ajax*/
