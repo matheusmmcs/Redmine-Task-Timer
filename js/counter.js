@@ -3,7 +3,7 @@
 	var hours = 0;
 	
 	var timer = setInterval(function(){
-		hours+=1000;
+		hours++;
 		$(elem).val((hours/3600).toFixed(3));
 	}, 1000);
 
