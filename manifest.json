@@ -1,0 +1,39 @@
+﻿{
+  "name": "Redmine Task Timer™",
+  "version": "0.0.2",
+  "description": "Plugin para captura e gerenciamento dos tempos nas tarefas no redmine.",
+  "omnibox": { "keyword" : "timer" },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["js/jquery.js"]
+    }
+  ],
+  "permissions": [
+    "notifications", 
+    "tabs", 
+    "http://*/*", 
+    "https://*/*", 
+    "unlimitedStorage"
+  ],
+  "background": {
+    "scripts": ["js/jquery.js", "js/background.js"]
+  },
+  "icons": { 
+    "16": "images/icon16.png",
+    "48": "images/icon48.png"
+  },
+  "browser_action": {
+    "default_icon": "images/icon16.png",
+	  "default_title": "RedmineTaskTimer",
+	  "default_popup": "templates/popup.html"
+  },
+  "web_accessible_resources": [
+    "js/jquery.min.map",
+    "fonts/glyphicons-halflings-regular.svg",
+    "fonts/glyphicons-halflings-regular.eot",
+    "fonts/glyphicons-halflings-regular.ttf",
+    "fonts/glyphicons-halflings-regular.woff"
+  ],
+  "manifest_version": 2
+}

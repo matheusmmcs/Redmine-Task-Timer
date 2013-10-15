@@ -1,0 +1,7 @@
+https://github.com/duncansmart/less.js-windows
+
+http://blog.dotsmart.net/2010/11/26/running-the-less-js-command-line-compiler-on-windows/
+
+-----------------------------------------------
+
+cscript //nologo lessc.wsf input.less [output.css] [-compress]

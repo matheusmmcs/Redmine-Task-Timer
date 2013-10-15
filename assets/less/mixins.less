@@ -1,0 +1,25 @@
+//
+// Mixins
+// --------------------------------------------------
+
+.opacity(@opacity){
+  -webkit-opacity:  @opacity / 100;
+     -moz-opacity:  @opacity / 100;
+       -o-opacity:  @opacity / 100;
+          opacity:  @opacity / 100;
+  filter:           ~"alpha(opacity=@{opacity})";
+}
+
+.margin-center{
+	float: none;
+	margin: 0 auto;
+}
+.text-center{
+	text-align: center;
+}
+.justify{
+	text-align: justify;
+}
+.margin-bottom-0{
+	margin-bottom: 0;
+}

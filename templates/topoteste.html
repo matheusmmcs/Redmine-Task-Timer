@@ -1,0 +1,334 @@
+<!-- ROTEIRO -->
+<div id="USboxes">
+	<div id="USmodal" class="USwindow">
+		<h3>Roteiro</h3>
+		<a href="#" class="USclose UScloseModal" title="Fechar">x</a>
+		<div></div>
+	</div>
+	<div id="UScomentModal" class="USwindow">
+		<h3>Digite seu Comentário:</h3>
+		<a href="#" class="USclose UScloseModal" title="Fechar">x</a>
+		<div class="UScomentText">
+			<textarea name="UScomentText" id="UScomentText"></textarea>
+		</div>
+		<div class="UScomentBotoes">
+			<a class="USbotao USbotao-verde" id="UScomentEnviar">Enviar</a>
+			<a class="USbotao" id="UScomentCancelar">Cancelar</a>
+		</div>
+	</div>
+	<div id="USmask"></div>
+</div>
+
+<!-- TOPO INSERIDO -->
+<div id="USwebclient-topo-todo">
+	<div id="USwebclient-topo">
+		<div class="USdireita">
+			<button type="button" class="USclose UScloseTopo" title="Minimizar">x</button>
+			<a class="USbotao USbotao-verde USconcluir USdisabled" id="concluir12qz3" href="#"><b class="USicon-ok USicon-white"></b> Concluir Etapa</a>
+			<a class="USbotao" id="USIDroteiro" href="#USmodal" name="USmodal"><b class="USicon-list"></b> Visualizar Roteiro</a>
+			<a class="USbotao USbotao-vermelho" id="USadiarTeste"><b class="USicon-remove USicon-white"></b> Adiar Teste</a>
+		</div>
+		<div class="USesquerda">
+			<div id="USinfoTopo">
+				UseSkill - 
+				<span id="USinfoTarefaNome">
+
+				</span> - 
+				<span id="USinfoPassos">
+					1/5
+				</span>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- BOTÃO SHOW TOPO -->
+<div id="USbtnsShow">
+	<a class="USbotao" id="UScomentario" href="#UScomentModal" name="USmodal">Comentário</a>
+	<a class="USbotao USbotao-info" id="USbuttonTopo">UseSkill <b class="USicon-chevron-down USicon-white"></b></a>
+</div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+<script>
+	var domainUseSkill = "http://localhost:8080/Usabilidade";
+	//para saber se está em uma página de pergunta
+	var urlPergunta = "teste/responder/pergunta";
+	var urlAtual = location.protocol+location.host+location.pathname;
+	var urlJquery = chrome.extension.getURL("js/jquery.js");
+	window.jQuery || document.write('<script src="'+urlJquery+'"><\/script>');
+	//inserção das imagens do bootstrap
+	var urlImg = chrome.extension.getURL("images/glyphicons-halflings.png");
+	var urlImg2 = chrome.extension.getURL("images/glyphicons-halflings-white.png");
+	$('[class*="USicon-"]').css("background-image", 'url("'+urlImg+'")');
+	$('.USicon-white').css("background-image", 'url("'+urlImg2+'")');
+
+	//define se é pergunta ou não, para esconder o topo
+	if(urlAtual.indexOf(urlPergunta)!=-1){
+		//é pergunta, esconde o topo
+		$('#USwebclient-topo-todo').hide();
+		$('#USbuttonTopo').hide();
+	}
+
+	(function($){
+		var $topo = $('#USwebclient-topo-todo');
+		var vel = 400;
+		var topoShow = false;
+		var heightTop = $topo.css("height").substr(0,2);
+		var btnConcluir = "concluir12qz3";
+
+		function getStorage(callback){			
+			chrome.extension.sendRequest({useskill: "getStorage"}, function(response) {
+				if (callback && typeof(callback) === "function") {
+        			callback.call(this, response);
+    			}
+    			
+			});
+		}
+		$('.UScloseTopo').live({'click':function(e){
+			e.preventDefault();
+			$('#USbuttonTopo').trigger('click');
+		}})
+
+		/*função para topo*/
+		$('#USbuttonTopo').live({
+			'click':function(e){
+				e.preventDefault();
+				var $this = $(this);
+				if(topoShow){
+					$topo.fadeToggle(vel, function(){
+						//$this.animate({top: '-='+heightTop},vel/2);
+					});
+					$this.html('UseSkill <b class="USicon-chevron-down USicon-white"></b>');
+					$('.USicon-white').css("background-image", 'url("'+urlImg2+'")');
+					topoShow=false;
+				}else{
+					//$this.animate({ top: '+='+heightTop},vel/2,function(){
+						$topo.fadeToggle(vel);
+					//});
+					$this.html('UseSkill <b class="USicon-chevron-up USicon-white"></b>');
+					$('.USicon-white').css("background-image", 'url("'+urlImg2+'")');
+					topoShow=true;
+				}
+			}
+		});
+
+		/*converter json to object*/
+		function parseJSON(data) {
+	    	return window.JSON && window.JSON.parse ? window.JSON.parse( data ) : (new Function("return " + data))(); 
+		}
+		function stringfyJSON(data){
+			return window.JSON && window.JSON.stringify ? window.JSON.stringify(data) : (new Function("return " + data))();
+		}
+
+		/*método genérico para realizar ajax*/
+		function ajax(caminho, tipo, dados){
+			var retorno;
+			$.ajax({
+				url: caminho,
+				cache: false,
+				type: tipo,
+				async: false,
+				data: dados,
+				success: function(dados){
+					retorno = dados;
+				},
+				error: function(jqXHR, status, err){
+					console.log(jqXHR);
+				}
+			});
+			return retorno;
+		}
+
+		function nextElement(){
+			getStorage(function(dado){
+				var prox = dado.dados.elementoAtualLista;
+				prox++;
+				chrome.extension.sendRequest({useskill: "nextElement", atual: prox});
+			});
+		}
+
+		$(document).ready(function(){
+				//ao iniciar, carregar as informações do teste atual
+				var numElAtual, listaEl, elAtual, acoes, loadEl;
+
+				chrome.extension.sendRequest({useskill: "getStorageAndAcoes"}, function(resp) {
+					numElAtual = resp.storage.elementoAtualLista;
+					listaEl = parseJSON(resp.storage.listaElementos);
+					elAtual = listaEl[numElAtual];
+					acoes = stringfyJSON(resp.acoes);
+					//apos capturar as variaveis, setar texto em cima
+					preencheConteudoHead(elAtual.id);
+					$("#USinfoPassos").html(numElAtual+1 +"/"+ listaEl.length);
+				});
+
+				function preencheConteudoHead(idTarefa){
+					$.ajax({
+						url : domainUseSkill+"/tarefa/"+idTarefa+"/json",
+						type : 'GET',
+						dataType : 'json',
+						async : false,
+						success : function(json) {
+							console.log(json);
+							$('#USmodal').children('div').html(json.tarefaVO.roteiro);
+							$("#USinfoTarefaNome").html(json.tarefaVO.titulo);
+						},
+						error : function(jqXHR, textStatus, errorThrown){
+							console.log(jqXHR);
+						}
+					});
+				}
+
+				//quando houver click, verifico se há target e se este é diferente de self e _self (abrindo nova aba).
+				$('a').click(function(e){
+					var target = $(this).attr("target");
+					if(target){
+						if(target!="_self" && target!="self"){
+							e.preventDefault();
+							var href = new String($(this).attr("href"));
+							var urlFinal;
+							//corrigir url
+							//se tiver o :// ta 100%
+							if(href.indexOf("://")!=-1){
+								urlFinal = href;
+							}else{
+								//senão tem q verificar se o primeiro elemento da string é o /
+								if(href[0]=="/"){
+									//path absoluto
+									urlFinal=location.protocol+location.host+href;
+								}else{
+									//senão ele é um path relativo
+									urlFinal=location.protocol+location.host+location.pathname+href;
+								}
+							}
+							//open new tab, enviar para plugin nova tab a ser monitorada
+							chrome.extension.sendRequest({useskill: "setNewTab", url: urlFinal});
+						}
+					}
+				});
+
+				//método para concluir a tarefa
+				$("#"+btnConcluir).click(function(e){
+					e.preventDefault();
+						
+						chrome.extension.sendRequest({useskill: "getAcoes"}, function(resp) {
+							acoes = stringfyJSON(resp.dados);
+
+							$.ajax({
+								url: domainUseSkill+"/tarefa/save/fluxo",
+								cache: false,
+								type: "POST",
+								async: false,
+								data: { 
+									'tarefaId': elAtual.id, 
+									'dados': acoes
+								},
+								success: function(dados){
+									chrome.extension.sendRequest({useskill: "clearAcoes"}, function() {
+						    			nextElement();
+									});
+								},
+								error: function(jqXHR, status, err){
+									console.log(jqXHR);
+								}
+							});
+						});
+				});
+
+				//método para adiar o teste
+				$('#USadiarTeste').click(function(e){
+					var r = confirm("Deseja adiar este teste? Os dados armazenado até o momento serão perdidos!");
+					if (r==true){
+					  chrome.extension.sendRequest({useskill: "testFinish"});
+					}
+				});
+
+				//método para responder questionário
+				$('#USperguntaTeste12z3').click(function(e){
+					e.preventDefault();
+					var $form = $(this).parentsUntil("form").parent();
+					var pergId = $form.children("#pergid").val();
+					var urlResp = $form.attr('action');
+					var resposta = "";
+					
+					//separar resposta
+					if(urlResp.indexOf('alternativa')!=-1){
+						var $checked = $('input:checked');
+						if($checked.length!=0){
+							resposta = $checked.val();
+						}
+					}else{
+						resposta = $('textarea').val();
+					}
+
+					//evitar problema localhost de duplicar /Usabilidade
+					if(resposta!=""){
+						domainUseSkill = domainUseSkill.replace("/Usabilidade","");
+						$.ajax({
+							url : domainUseSkill+urlResp,
+							type : 'POST',
+							dataType : 'json',
+							async : false,
+							data : {
+								'perguntaId' 	: pergId,
+								'resposta'		: resposta
+								},
+							success : function(json) {
+								nextElement();
+							},
+							error : function(jqXHR, textStatus, errorThrown){
+								$('.USAlertError').html('Não foi possível responder. Tente Novamente!');
+								$('.alert').fadeIn(300);
+								console.log(jqXHR)
+							}
+						});
+					}else{
+						$('.USAlertError').html('Preencha a resposta antes de enviar!');
+						$('.alert').fadeIn(300);
+					}
+				});
+
+				/*	MODAL	*/
+				$('a[name=USmodal]').click(function(e) {
+					e.preventDefault();
+					var idl = $(this).attr('href');
+					var maskH = $(document).height();
+					var maskW = $(window).width();
+					$('#USmask').css({'width':maskW,'height':maskH}).fadeIn(600);
+					var winH = $(window).height();
+					var winW = $(window).width();
+					$(idl).css({'top':winH/2-$(idl).height()/2,'left':winW/2-$(idl).width()/2}).fadeIn(300);
+				});
+
+				$(window).resize(function () {
+			        var box = $('#USboxes .USwindow');
+			        var maskHeight = $(document).height();
+			        var maskWidth = $(window).width();
+			        var winH = $(window).height();
+			        $('#USmask').css({'width':maskWidth,'height':maskHeight});
+			        box.css({'top':winH/2 - box.height()/2,'left':maskWidth/2 - box.width()/2});
+				});
+
+				$('.USwindow .UScloseModal').click(function (e) {
+					e.preventDefault();
+					$('#USmask, .USwindow').fadeOut(200);
+				});
+
+				$('#USmask').click(function () {
+					$(this).fadeOut(200);
+					$('.USwindow').fadeOut(200);
+				});
+
+				/*	MODAL 2 */
+				//método para realizar o comentário
+				$('#UScomentEnviar').click(function(e){
+					e.preventDefault();
+					ajax(domainUseSkill+"/tarefa/enviarcomentario", "POST", {'idTarefa' : elAtual.id, 'texto' : $('#UScomentText').val()});
+					$('.UScloseModal').trigger('click');
+				});
+
+				$('#UScomentCancelar').click(function(e){
+					e.preventDefault();
+					$('.UScloseModal').trigger('click');
+				});
+			});
+	})(jQuery);
+</script>
