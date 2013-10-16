@@ -38,6 +38,12 @@
 				resetTime();
 			});
 
+			$(document).on("submit", "#issue-form", function(e){
+				dataFromBackground("removeTaskTime", {
+					task: window.location.href
+				});
+			});
+
 			function startTime(){
 				if($stopStart){
 					$stopStart.attr("data-started", true);

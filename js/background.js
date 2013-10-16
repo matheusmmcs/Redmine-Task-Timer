@@ -37,6 +37,14 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 				showNotification("That task has an previous time persisted: \nTime: "+secondsToHms(value));
 			}
 			break;
+		case "removeTaskTime":
+			localStorage.removeItem(request.data.task);
+			break;
+		case "listTaskTimes":
+			for (var i = 0; i < localStorage.length; i++){
+				console.log(i, localStorage.key(i), localStorage.getItem(localStorage.key(i)));
+			}
+			break;
 	}
 });
 
