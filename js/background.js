@@ -1,6 +1,6 @@
 
 //GLOBAL VARS (defined in options.html)
-var domain = "redmine.infoway-pi.com.br";
+var timeToPersist = 1000;
 
 chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
 	chrome.tabs.query({
@@ -21,8 +21,21 @@ chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
 
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 	switch(request.redmine){
-		case "getStorageAndAcoes":
-			sendResponse(null);
+		//receber, alterar e remover os tempos do usuario
+		case "getPersistTime":
+			sendResponse(timeToPersist);
+			break;
+		case "setTaskTime":
+			console.log("setTaskTime", request.data.task, request.data.time);
+			localStorage.setItem(request.data.task, request.data.time);
+			break;
+		case "getTaskTime":
+			var value = localStorage.getItem(request.data.task);
+			value = value ? value : 0;
+			sendResponse(value);
+			if(value != 0){
+				showNotification("That task has an previous time persisted: \nTime: "+secondsToHms(value));
+			}
 			break;
 	}
 });
@@ -68,7 +81,29 @@ function openPage(page) {
     });
 }
 
+//NOTIFICATION
+function showNotification(title, message){
+	if (window.webkitNotifications.checkPermission() == 0) {
+	    var notification = window.webkitNotifications.createNotification('../images/icon16.png', title, message);
+	    notification.show();
+	} else {
+	    window.webkitNotifications.requestPermission();
+	}
+}
+
+
 //----------------------------------------------------------------------------------------------------------------------------------------------
+
+function secondsToHms(t) {
+	var t = parseInt(t, 10);
+    var h   = Math.floor(t / 3600);
+    var m = Math.floor((t - (h * 3600)) / 60);
+    var s = t - (h * 3600) - (m * 60);
+    h = h < 10 ? "0"+h : h;
+    m = m < 10 ? "0"+m : m;
+    s = s < 10 ? "0"+s : s;
+	return h+':'+m+':'+s;
+}
 /*método genérico para realizar ajax*/
 /*
 function ajax(caminho, tipo, dados){

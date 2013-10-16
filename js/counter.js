@@ -38,18 +38,6 @@
 				resetTime();
 			});
 
-
-			function secondsToHms(t) {
-				var t = parseInt(t, 10);
-			    var h   = Math.floor(t / 3600);
-			    var m = Math.floor((t - (h * 3600)) / 60);
-			    var s = t - (h * 3600) - (m * 60);
-			    h = h < 10 ? "0"+h : h;
-			    m = m < 10 ? "0"+m : m;
-			    s = s < 10 ? "0"+s : s;
-    			return h+':'+m+':'+s;
-			}
-
 			function startTime(){
 				if($stopStart){
 					$stopStart.attr("data-started", true);
@@ -68,7 +56,7 @@
 			}
 
 			function atualizeClock(s){				
-				var hoursFormatted = (s/3600).toFixed(4);
+				var hoursFormatted = (s/3600);//.toFixed(4);
 				$timeInput.val(hoursFormatted);
 				//atualize clock
 				if($clock){
@@ -92,24 +80,53 @@
 						stopTime();
 						$clock.html(EnumMessages.CLOCK);
 						$timeInput.val("");
+						dataFromBackground("setTaskTime", {
+							task: window.location.href,
+							time: 0
+						});
 					}
 				}
 			}
 
+			//when initialize, atualiza clock to the previous value
+			dataFromBackground("getTaskTime", {task: window.location.href}, function(data){
+				atualizeClock(data);
+			});
+
+			//initialize a function to persist the time to determinated task
+			dataFromBackground("getPersistTime", null, function(time){
+				var interval = setInterval(function(){
+					if($timeInput){
+						var value = parseFloat($timeInput.val());
+						value = value ? (value*3600) : 0;
+						if(value != 0){
+							dataFromBackground("setTaskTime", {
+								task: window.location.href,
+								time: value
+							});
+						}
+					}
+				}, time);
+			});		
+
+			function dataFromBackground(method, data, callback){
+				chrome.extension.sendRequest({redmine: method, data: data}, function(response) {					
+					if (callback && typeof(callback) === "function") {
+						callback.call(this, response);
+					}
+				});
+			}	
+
+			function secondsToHms(t) {
+				var t = parseInt(t, 10);
+			    var h   = Math.floor(t / 3600);
+			    var m = Math.floor((t - (h * 3600)) / 60);
+			    var s = t - (h * 3600) - (m * 60);
+			    h = h < 10 ? "0"+h : h;
+			    m = m < 10 ? "0"+m : m;
+			    s = s < 10 ? "0"+s : s;
+    			return h+':'+m+':'+s;
+			}
 		}
 	}
 })(jQuery);
-
-	
-
-	//clearInterval(int)
-
-	//inserir o contador e enviar pro plugin qual tarefa foi iniciada
-	/*
-	//localStorage.setItem("x", 1);
-	chrome.extension.sendRequest({useskill: "getStorage"}, function(response) {
-		if (callback && typeof(callback) === "function") {
-			callback.call(this, response);
-		}
-	});
-	*/
