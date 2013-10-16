@@ -6,15 +6,13 @@ chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
 	chrome.tabs.query({
 	    "status": "complete",
 	    "windowType": "normal"
-	    //"currentWindow": true,
-	    //"active": true
 	}, function (tabs) {
 	    for (i in tabs) {
 	    	var tab = tabs[i];
 	    	if(tab && tab.id == tabId){
     			chrome.tabs.executeScript(tabId, {file: "js/jquery.js"});
 				chrome.tabs.executeScript(tabId, {file: "js/counter.js"});
-				//chrome.tabs.insertCSS(tabId, {file: "css/topoteste.css"});
+				chrome.tabs.insertCSS(tabId, {file: "css/time-tracker.css"});
 	    	}
 	    }
 	});
