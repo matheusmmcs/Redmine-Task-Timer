@@ -1,11 +1,16 @@
 (function($){
-	var elem = document.getElementById("time_entry_hours");
-	var hours = 0;
+	if($('meta[name=description]').attr("content").toLowerCase() == "redmine"){
+		var $elem = $("#time_entry_hours");
+		var hours = 0;
+		
+		var timer = setInterval(function(){
+			hours++;
+			$elem.val((hours/3600).toFixed(3));
+		}, 1000);
+	}
+})(jQuery);
+
 	
-	var timer = setInterval(function(){
-		hours++;
-		$(elem).val((hours/3600).toFixed(3));
-	}, 1000);
 
 	//clearInterval(int)
 
@@ -18,4 +23,3 @@
 		}
 	});
 	*/
-})(jQuery);
