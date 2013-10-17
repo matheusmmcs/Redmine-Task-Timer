@@ -41,9 +41,12 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			localStorage.removeItem(request.data.task);
 			break;
 		case "listTaskTimes":
+			sendResponse(localStorage);
+			/*
 			for (var i = 0; i < localStorage.length; i++){
 				console.log(i, localStorage.key(i), localStorage.getItem(localStorage.key(i)));
 			}
+			*/
 			break;
 	}
 });

@@ -29,11 +29,7 @@
 	  "default_popup": "templates/popup.html"
   },
   "web_accessible_resources": [
-    "js/jquery.min.map",
-    "fonts/glyphicons-halflings-regular.svg",
-    "fonts/glyphicons-halflings-regular.eot",
-    "fonts/glyphicons-halflings-regular.ttf",
-    "fonts/glyphicons-halflings-regular.woff"
+    "js/jquery.min.map"
   ],
   "manifest_version": 2
 }
