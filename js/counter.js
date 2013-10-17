@@ -1,5 +1,6 @@
 (function($){
-	if($('meta[name=description]').attr("content").toLowerCase() == "redmine"){
+	var metaDesc = $('meta[name=description]').attr("content");
+	if(metaDesc && metaDesc.toLowerCase() == "redmine"){
 		var EnumMessages = {
 			RESET: "Are you sure that wish to RESET the time?",
 			CLOCK: "00:00:00"
