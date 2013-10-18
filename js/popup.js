@@ -1,4 +1,3 @@
-console.log("popup", jQuery);
 (function($){
 	$(document).ready(function(){
 		//Definição de urls para chamadas ajax
@@ -11,6 +10,12 @@ console.log("popup", jQuery);
 		    POST : "POST",
 		    GET : "GET"
 		}
+
+		$(document).on("click", ".time-tracker-popup-reset", function(e){
+			e.preventDefault();
+			var dataid = $(this).closest("li").attr("data-id");
+			changeRender(renderRemoveTaskTime(dataid));
+		});
 
 		//INITIALIZE
 		dataFromBackground("listTaskTimes", null, function(localst){
@@ -76,22 +81,30 @@ console.log("popup", jQuery);
 		//RENDER FUNCTIONS
 		function changeRender(html){			
 			var $content = $("#time-tracker-cnt");
-			var $loader = $("#loader");		
+			var $loader = $("#loader");
+			var vel = 500;
 			//
-			$content.addClass("hide");
-			$loader.removeClass("hide");
-			//
-			$content.html(html).removeClass("hide");
-			$loader.addClass("hide");
+			$content.fadeOut(function(){
+				$content.html(html);
+				$content.fadeIn(vel);
+			});
 		}
 
 		function renderListTaskTimes(localst){
-			var string = "<ul>";
+			var string = '<h1>Started Tasks</h1><ul class="list">';
 			for(var idx in localst){
-				string += '<li><a href="'+idx+'" target="_blank">'+idx+'</a></li>';
+				var regex =/\d*$/gi;
+				var regArray = regex.exec(idx);
+				string += '<li data-id="'+regArray[0]+'"><a href="'+idx+'" title="'+idx+'" target="_blank">Task:  '+regArray[0]+'</a><a class="bt bt-stop pull-right time-tracker-popup-reset"><span class="glyphicon glyphicon-trash"></span></a><a href="'+idx+'" title="'+idx+'" target="_blank" class="bt bt-reset pull-right"><span class="glyphicon glyphicon-folder-open"></span></a></li>';
 			}
 			string += "</ul>";
 			return string;
 		}
+
+		function renderRemoveTaskTime(taskId){
+			var string = '<h1>Task '+taskId+'</h1><a class="bt bt-stop width-50p pull-right">Clear Time</a><a class="bt bt-reset width-50p pull-right">Cancel</a>';			
+			return string;
+		}
+
 	});
 })(jQuery);

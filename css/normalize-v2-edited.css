@@ -5,6 +5,17 @@
    ========================================================================== */
 
 /**
+ * Edited
+ */
+*{
+  box-sizing: border-box;
+}
+html, body{
+  margin: 0;
+  padding: 0;
+}
+
+/**
  * Correct `block` display not defined in IE 8/9.
  */
 
