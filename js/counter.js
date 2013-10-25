@@ -2,10 +2,38 @@
 	$(document).ready(function(){
 		var metaDesc = $('meta[name=description]').attr("content");
 		if(metaDesc && metaDesc.toLowerCase() == "redmine"){
+
+			function TimeObject(data){
+				this.task = data ? data.task : undefined;
+				this.time = data ? data.time : undefined;
+				this.dateBackground = data ? data.dateBackground : undefined;
+				this.timeobj = true;
+
+				this.atualize = function(data){
+					if(data){
+						if(data.task){
+							if(!this.task){
+								this.task = data.task;
+							}
+						}
+						if(data.time){
+							this.time = data.time;
+						}
+						if(data.dateBackground){
+							this.dateBackground = data.dateBackground;
+						}
+					}
+				}
+				this.clearDateBackground = function(){
+					this.dateBackground = undefined;
+				}
+			}
+
 			var EnumMessages = {
 				RESET: "Are you sure that wish to RESET the time?",
 				CLOCK: "00:00:00"
 			}		
+
 			var EnumState = {
 				START:"Start",
 				STOP:"Stop",
@@ -14,11 +42,14 @@
 				STOP_CLASS:"bt bt-stop",
 				RESET_CLASS:"bt bt-reset"
 			}
+
 			var $timeInput = $("#time_entry_hours");		
+
 			if($timeInput.length){
 				//configs
-				var timerFunction, $clock, $stopStart, $reset;
-				//has time-tracker? if not, insert a html to start/stop timer, and show the time
+				var timerFunction, $clock, $stopStart, $reset, timeObject;
+
+				//has time-tracker? insert a html to start/stop timer, and show the time
 				if(!$("#time-tracker-cnt").length){
 					$timeInput.parent().append('<div id="time-tracker-cnt"><div id="time-tracker-clk" class="clk">'+EnumMessages.CLOCK+'</div><a id="time-tracker-btn" class="'+EnumState.START_CLASS+'">'+EnumState.START+'</a><a id="time-tracker-rst" class="'+EnumState.RESET_CLASS+'">'+EnumState.RESET+'</a></div>');
 					$clock = $('#time-tracker-clk');
@@ -27,7 +58,7 @@
 				$(document).on("click", "#time-tracker-btn", function(e){
 					e.preventDefault();
 					$stopStart = $(this);
-					var isStarted = $stopStart.attr("data-started"), newState;
+					var isStarted = $stopStart.attr("data-started");
 					if(!isStarted || isStarted == "false"){
 						startTime();
 					}else{
@@ -44,6 +75,37 @@
 					dataFromBackground("removeTaskTime", {
 						task: window.location.href
 					});
+				});
+
+				//when initialize, atualiza clock to the previous value
+				dataFromBackground("getTaskTime", {task: window.location.href}, function(data){
+					timeObject = new TimeObject(data);
+					timeObject.task = window.location.href;
+					if(timeObject.dateBackground){
+						timeObject.time = new Date().getTime() - timeObject.dateBackground + timeObject.time;
+						timeObject.dateBackground = undefined;
+						dataFromBackground("setTaskTime", stringfyJSON(timeObject));
+						atualizeClock(timeObject.time);
+						startTime();
+					}else{
+						atualizeClock(timeObject.time);
+					}
+					//initialize a function to persist the time to determinated task
+					dataFromBackground("getPersistInterval", null, function(time){
+						var interval = setInterval(function(){
+							if($timeInput){
+								var value = parseFloat($timeInput.val());
+								value = value ? (value*3600) : 0;
+								if(value != 0){
+									timeObject.atualize({
+										time: value,
+										dateBackground: new Date().getTime()
+									});
+									dataFromBackground("setTaskTime", stringfyJSON(timeObject));
+								}
+							}
+						}, time);
+					});	
 				});
 
 				function startTime(){
@@ -88,34 +150,14 @@
 							stopTime();
 							$clock.html(EnumMessages.CLOCK);
 							$timeInput.val("");
-							dataFromBackground("setTaskTime", {
-								task: window.location.href,
+							timeObject.atualize({
 								time: 0
 							});
+							timeObject.clearDateBackground();
+							dataFromBackground("setTaskTime", stringfyJSON(timeObject));
 						}
 					}
-				}
-
-				//when initialize, atualiza clock to the previous value
-				dataFromBackground("getTaskTime", {task: window.location.href}, function(data){
-					atualizeClock(data);
-				});
-
-				//initialize a function to persist the time to determinated task
-				dataFromBackground("getPersistTime", null, function(time){
-					var interval = setInterval(function(){
-						if($timeInput){
-							var value = parseFloat($timeInput.val());
-							value = value ? (value*3600) : 0;
-							if(value != 0){
-								dataFromBackground("setTaskTime", {
-									task: window.location.href,
-									time: value
-								});
-							}
-						}
-					}, time);
-				});		
+				}	
 
 				function dataFromBackground(method, data, callback){
 					chrome.extension.sendRequest({redmine: method, data: data}, function(response) {					
@@ -134,6 +176,13 @@
 				    m = m < 10 ? "0"+m : m;
 				    s = s < 10 ? "0"+s : s;
 	    			return h+':'+m+':'+s;
+				}
+
+				function stringfyJSON(data){
+					return window.JSON && window.JSON.stringify ? window.JSON.stringify(data) : (new Function("return " + data))();
+				}
+				function parseJSON(data) {
+					return window.JSON && window.JSON.parse ? window.JSON.parse(data) : (new Function("return " + data))(); 
 				}
 			}
 		}

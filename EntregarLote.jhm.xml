@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE jheat-mapping PUBLIC
+    "-//JHeat/JHeat DTD 1.0//BR"
+    "http://www.infoway-pi.com.br/jheat.dtd">
+
+<jheat-mapping>
+	<flow name="entregarLote" display-name="Geração de Lote"
+		class="br.com.infowaypi.ecare.services.EntregarLote"
+		section="examesPrestador,urgenciaInternacao,odontoPrestador, honorarioAnestesita">
+
+		<description>Registra a entrega de um lote de guias.</description>
+	
+		<step-method name="buscarGuias" display-name="Informar Dados">
+			<step-param name="competencia" required="true" type="java.util.Date" display-name="Competência" mask="99/9999" input-type="month-year"/>
+			
+			<select-param name="tipoDeGuia" display-name="Selecione o Tipo de Guia" type="java.lang.Integer" required="true">
+				<constants-group class="br.com.infowaypi.ecarebc.atendimentos.LoteDeGuias" name="Tipo de Guia">
+					<entry display-name="Internações" key-value="INTERNACOES" />
+					<entry display-name="Consulta de Urgência/Atendimento Subsequente" key-value="URGENCIA" />
+					<entry display-name="Guia de Exame" key-value="EXAME" />
+					<entry display-name="Cirurgia Odontológica" key-value="CIRURGIA_ODONTO" />
+					<entry display-name="Guia de Honorários" key-value="HONORARIOS" />
+					<entry display-name="Guia de Acompanhamento Anestésico" key-value="ACOMPANHAMENTO_ANESTESICO" />
+					<entry display-name="Guia de Recurso de Glosa" key-value="RECURSO_DE_GLOSA" />
+				</constants-group>
+			</select-param>
+			
+			<session-param name="prestador" operation="reload" />
+			
+			<html><![CDATA[
+				<script>
+					window.onload = function () {
+						var competencia = document.getElementById("competencia");
+						var tipoGuia = document.getElementById("tipoDeGuia");
+						var buttons = document.getElementsByClassName('actionButton');
+						for(var i = 0; i < buttons.length; i++){
+							buttons[i].onclick = function(e){
+								if(tipoGuia.value == 6){
+									var prestador = ${prestador.idPrestador};
+									var context = document.location.href.match(/^.*?\/\/.*?\/.*?\//)[0];
+									var params = "servletLote/?funcao=entregarLote&prestador=" + prestador + "&competencia=" + competencia.value;
+									var url = context + params;
+									
+									var http = new XMLHttpRequest();
+									http.open("GET", url, true);
+								
+									http.onreadystatechange = function() {
+										
+										if(http.readyState == 4 && http.status == 200) {
+											
+											var redirecionar = http.responseText;
+											
+											if(redirecionar == "true"){
+												/* Redireciona para o fluxo de entregar lote de GRG */
+												document.location = "JHeatFlowAction.do?action=process&sectionName=sectionOculta&flowName=entregarLoteGRG&step=buscarGuias&competencia=" + competencia.value;
+											}else{
+												/* Chama o fluxo de entregar lote normal fazendo com que a validação de guia não encontrada seja exibida na tela (recurso técnico :-|) */
+												document.location = "JHeatFlowAction.do?action=process&sectionName=urgenciaInternacao&flowName=entregarLote&step=buscarGuias&competencia=" + competencia.value + "&tipoDeGuia=" + tipoGuia.value;
+											}
+											
+										}
+									
+									};
+									
+									http.send();
+									return false;
+								} 
+							}
+						}
+					}
+				</script>
+			]]></html>
+			<step-return name="resumo" type="br.com.infowaypi.ecare.resumos.ResumoGuia" display-name="" scope="session"/>
+		</step-method>
+		
+		<step-method display-name="Selecionar Guias" name="selecionarGuias">
+			<session-param name="resumo"/>
+			
+			<collection-param name="guias" type="br.com.infowaypi.ecarebc.atendimentos.GuiaSimples" display-name="Escolher Guias">
+				<checklist page-size="30" session-property-ref="resumo" operation="none">
+					<display-property name="autorizacao" display-name="Autorização/N° da guia"/>
+					<display-property name="tipo" display-name="Tipo de Guia"/>
+					<display-property name="segurado.pessoaFisica.nome" display-name="Beneficiário"/>
+					<display-property name="situacao.descricao" display-name="Situação"/>
+					<display-property name="dataAtendimento" display-name="Dt Início Atendimento" type="date"/>
+					<display-property name="dataTerminoAtendimento" display-name="Dt Término Atendimento" type="date"/>
+					<display-property name="valorTotal" display-name="Valor Apresentado(R$)" type="money" />
+				</checklist>
+			</collection-param>
+			
+			<session-param name="prestador" operation="reload" />
+			
+			<session-param name="usuario"/>
+			
+			<step-return name="lote" type="br.com.infowaypi.ecarebc.atendimentos.LoteDeGuias" display-name="" scope="session" />
+		</step-method>
+		
+		<step-method name="salvarLote" display-name="Conferir Dados" committed="true">
+			<session-param name="lote" display-name="Dados do Lote" operation="none">
+				<display-property name="prestador.pessoaJuridica.fantasia" display-name="Prestador"/>
+				<display-property name="competencia" display-name="Competência" type="month-year"/>
+				<display-property name="descricaoTipoGuia" display-name="Tipo de Guia"/>
+				<display-property name="numeroDeGuias" display-name="Número de Guias"/>
+				<display-property name="valorTotal" display-name="Valor Apresentado" type="money"/>
+				
+				<collection-display name="guiasEnviadas" display-name="Guias" default-sort="4">
+					<display-property name="autorizacao" display-name="Autorização/N° da guia"/>
+					<display-property name="tipo" display-name="Tipo de Guia"/>
+					<display-property name="segurado.pessoaFisica.nome" display-name="Beneficiário"/>
+					<display-property name="situacao.descricao" display-name="Situação"/>
+					<display-property name="dataAtendimento" display-name="Dt Início Atendimento" type="date"/>
+					<display-property name="dataTerminoAtendimento" display-name="Dt Término Atendimento" type="date"/>
+					<display-property name="valorTotal" display-name="Valor Apresentado(R$)" type="money"/>
+				</collection-display>
+				
+			</session-param>
+			<session-param name="usuario"/>
+			
+			<step-return name="lote" type="br.com.infowaypi.ecarebc.atendimentos.LoteDeGuias" display-name="" scope="session" />
+		</step-method>
+
+		<step-method name="finalizar" display-name="Imprimir">
+			<html>
+				<![CDATA[ 
+					<span class="not-for-print">
+						<button type="button" name="imprimir" class="actionButton" onclick="window.print();">Imprimir</button>
+					</span>
+					<infoway:mensagemSucesso mensagem="Lote de identificador ${lote.identificador} gerado com sucesso."/> 
+					<infoway:capaDeLoteDeEnvio lote="${lote}"/>
+				]]>
+			</html>
+		
+			<session-param name="lote" display-name="Conferir Dados" style-class="not-for-print">
+				<display-property name="prestador.pessoaJuridica.fantasia" display-name="Prestador"/>
+				<display-property name="competencia" display-name="Competência" type="month-year"/>
+				<display-property name="descricaoTipoGuia" display-name="Tipo de Guia"/>
+				<display-property name="numeroDeGuias" display-name="Número de Guias"/>
+				<display-property name="valorTotal" display-name="Valor Apresentado" type="money"/>
+				
+				<collection-display name="guiasEnviadas" display-name="Guias" default-sort="4">
+					<display-property name="autorizacao" display-name="Autorização/N° da guia"/>
+					<display-property name="tipo" display-name="Tipo de Guia"/>
+					<display-property name="segurado.pessoaFisica.nome" display-name="Beneficiário"/>
+					<display-property name="situacao.descricao" display-name="Situação"/>
+					<display-property name="dataAtendimento" display-name="Dt Início Atendimento" type="date"/>
+					<display-property name="dataTerminoAtendimento" display-name="Dt Término Atendimento" type="date"/>
+					<display-property name="valorTotal" display-name="Valor Apresentado(R$)" type="money"/>
+				</collection-display>
+			</session-param>
+			
+			<html>
+				<![CDATA[ 
+					<span class="not-for-print">
+						<button type="button" name="imprimir" class="actionButton" onclick="window.print();">Imprimir</button>
+					</span>
+				]]>
+			</html>
+		</step-method>
+	</flow>
+</jheat-mapping>

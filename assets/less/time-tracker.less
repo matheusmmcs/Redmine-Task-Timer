@@ -65,13 +65,14 @@
 }
 
 @colorBackground:		#F0F8FF;
+@colorBackgroundDark:	#DEE3F8;
 
 @colorBlueClean: 		#3498db;
 @colorBlueDark: 		darken(#428bca, 5%);
 @colorGreenClean:		#2ecc71;
 @colorGreenDark:		#27ae60;
 
-@minWidth:				300px;
+@minWidth:				350px;
 
 #time-tracker-popup{
 	*{
@@ -86,6 +87,17 @@
 		color: @colorBlueDark;
 		margin: 0;
 		padding: 10px 5px 0;
+	}
+	hr{
+		border-top: none;
+		border-bottom: 1px solid @colorBackgroundDark;
+	}
+	a{
+		text-decoration: none;
+		color: @colorBlueDark;
+		&:visited{
+			color: @colorBlueDark;
+		}
 	}
 
 	.list{
@@ -114,7 +126,6 @@
 			#time-tracker-popup > .clearfix;
 
 			a{
-				text-decoration: none;
 				color: white;
 
 				&:hover{
@@ -135,6 +146,18 @@
 			color: @colorBlueDark;
 		}
 	}
+	.actions{
+		margin: 0 auto;
+		padding: 5px 5px 10px;
+		text-align: center;
+		.bt{
+			width: 40%;
+			margin-left: 5%;
+			&:first-child{
+				margin-left: 0;
+			}
+		}
+	}
 
 	//
 	.hide{
@@ -148,6 +171,13 @@
 		zoom: 1;
 	}
 	.width-50p{
+		box-sizing: border-box;
 		width: 48%;
+	}
+	.text-center{
+		text-align: center;
+	}
+	.margin-0auto{
+		margin: 0 auto;
 	}
 }

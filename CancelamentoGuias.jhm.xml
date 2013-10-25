@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE jheat-mapping PUBLIC 
+	"-//JHeat/JHeat DTD 1.0//BR" 
+	"http://www.infoway-pi.com.br/jheat.dtd">
+	
+<jheat-mapping>
+<flow 
+	name="cancelarGuias" 
+	class="br.com.infowaypi.ecare.services.CancelamentoDeGuiasService"
+	display-name="Cancelar Guia" section="marcacao,consultasPrestador,examesPrestador,urgenciaInternacao, honorario, honorarioAnestesita,
+		autorizacoesCentral, autorizacoesCentralOdonto, odontoPrestador, odontoUrgenciaPrestador, marcacaoOdonto">
+		
+	<description>Cancelamento de guia</description>
+		
+		<step-method name="buscarGuiasCancelamento" display-name="Informar Número de Autorização" title="Informar Número de Autorização" buttons-position="bottom">
+			<step-param name="autorizacao" required="true" input-type="string" size="12" type="java.lang.String" display-name="Autorização" />
+			<session-param name="prestador" operation="none"/>
+			<session-param name="usuario"/>
+			<step-return name="guia" type="br.com.infowaypi.ecarebc.atendimentos.GuiaSimples" display-name="" scope="session" />		
+		</step-method>
+
+		<step-method name="cancelarGuia" display-name="Conferir Dados da Guia" title="Conferir Dados" committed="true">
+			<step-param name="motivo" type="java.lang.String" display-name="Motivo" size="82"/>
+			<session-param name="usuario"/>
+			<session-param name="guia" display-name="Informações da Guia" operation="none"/>
+				<html>
+				<![CDATA[
+					<infoway:GuiaApresentacao guiaApresentacao="${guia}"/>
+				]]>
+			</html>
+	</step-method>
+		
+	<step-method name="finalizar" display-name="Imprimir Comprovante de Cancelamento" title="Imprimir Comprovante"> 
+		<html>
+			<![CDATA[  <infoway:mensagemSucessoMarcacoes mensagem="Guia cancelada com sucesso!" autorizacao="${guia.autorizacao}"/> ]]>
+		</html>
+		
+		<html>
+			<![CDATA[ 
+				<span class="not-for-print">
+					<button type="button" name="imprimir" class="actionButton" onclick="window.print();">Imprimir</button>
+				</span>
+			]]>
+		</html>
+			
+		<session-param name="guia"/>
+		<html>
+			<![CDATA[
+				<infoway:GuiaApresentacao guiaApresentacao="${guia}"/>
+			]]>
+		</html>
+		
+		<html>
+			<![CDATA[ <infoway:imprimirGuia titulo="COMPROVANTE DE CANCELAMENTO DE GUIA"/> 
+				<span class="not-for-print">
+						<button type="button" name="imprimir" class="actionButton" onclick="window.print();">Imprimir</button>
+					</span>
+				]]>
+		</html>
+		
+	</step-method>
+	</flow>	
+</jheat-mapping>
