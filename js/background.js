@@ -1,7 +1,11 @@
 
 //GLOBAL VARS (defined in options.html)
 var intervalToPersist = 1000;
+var verifyRedmineUrl = true;
 
+var idTask = 'taskNumber';
+
+//when atualize tabs
 chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
 	chrome.tabs.query({
 	    "status": "complete",
@@ -10,15 +14,19 @@ chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
 	    for (i in tabs) {
 	    	var tab = tabs[i];
 	    	if(tab && tab.id == tabId){
-    			chrome.tabs.executeScript(tabId, {file: "js/jquery.js"});
-				chrome.tabs.executeScript(tabId, {file: "js/counter.js"});
-				chrome.tabs.insertCSS(tabId, {file: "css/time-tracker.css"});
+	    		//verify if the page has redmine name to insert plugin
+	    		if(verifyRedmineUrl && tab.url.toLowerCase().indexOf("redmine") != -1){
+	    			chrome.tabs.executeScript(tabId, {file: "js/jquery.js"});
+					chrome.tabs.executeScript(tabId, {file: "js/counter.js"});
+					chrome.tabs.insertCSS(tabId, {file: "css/time-tracker.css"});
+	    		}
 	    	}
 	    }
 	});
 
 });
 
+//when a extension send request
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 	switch(request.redmine){
 		//receber, alterar e remover os tempos do usuario
@@ -26,18 +34,20 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			sendResponse(intervalToPersist);
 			break;
 		case "setTaskTime":
-			localStorage.setItem(request.data.task, request.data);
+			var requestObject = parseJSON(request.data);
+			localStorage.setItem(requestObject[idTask], request.data);
 			break;
 		case "getTaskTime":
-			var value = localStorage.getItem(request.data.task);
+			var value = request.data[idTask] ? localStorage.getItem(request.data[idTask]) : null;
+			value = value ? parseJSON(value) : value;
 			sendResponse(value);
 			if(value){
-				showNotification("That task has an previous time persisted: \nTime: "+secondsToHms(value.time));
+				showNotification("This task already has "+secondsToHms(value.time)+" hours");
 			}
 			break;
 		case "removeTaskTime":
-			localStorage.removeItem(request.data.task);
-			showNotification("Task has been removed!");
+			localStorage.removeItem(request.data.taskNumber);
+			showNotification("Task time has been submitted!");
 			break;
 		case "listTaskTimes":
 			sendResponse(localStorage);
