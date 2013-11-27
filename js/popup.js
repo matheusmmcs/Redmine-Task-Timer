@@ -1,5 +1,6 @@
 (function($){
 	$(document).ready(function(){
+
 		//Definição de urls para chamadas ajax
 		var domain = "http://localhost:8080/Usabilidade";
 		var urls = new Array();
@@ -11,22 +12,28 @@
 		    GET : "GET"
 		}
 
+		var EnumStartStop = {
+			PLAY : 'play',
+			PAUSE : 'pause'
+		}
+
 		//show remove view of task
 		$(document).on("click", ".time-tracker-popup-reset", function(e){
 			e.preventDefault();
 			var $li = $(this).closest("li");
 			var dataid = $li.attr("data-id");
-			var datasrc = $li.attr("data-src");
-			changeRender(renderRemoveTaskTime(dataid, datasrc));
+			dataFromBackground("getTaskTime", { taskNumber : dataid, notification : false }, function(task){
+				renderRemoveTaskTime(task);
+			});
 		});
 
 		//
-		$(document).on("click", ".bt-stop-time", function(e){
+		$(document).on("click", ".time-tracker-popup-erase-time", function(e){
 			e.preventDefault();
 			var dataid = $(this).attr("data-id");
-			
-			//
-			renderInitialPage();
+			dataFromBackground("eraseTaskTime", { taskNumber : dataid }, function(tasks){
+				renderInitialPage();
+			});
 		});
 
 		//back to initial view
@@ -37,54 +44,6 @@
 
 		//INITIALIZE
 		renderInitialPage();
-
-		/*método genérico para realizar ajax*/
-		function ajax(caminho, tipo, dados){
-			var retorno;
-			$.ajax({
-				url: caminho,
-				cache: false,
-				type: tipo,
-				async: false,
-				data: dados,
-				success: function(dados){
-					retorno = dados;
-				},
-				error: function(jqXHR, status, err){
-					console.log(jqXHR);
-				}
-			});
-			return retorno;
-		}
-
-		/*função para carregar um novo html no conteúdo do popup*/
-		function getPage(pagina, callBack){
-			var vel = 400;
-			var $content = $('#content');
-
-			$content.fadeOut(vel,function(){
-				$('#loader').fadeIn(vel, function(){
-					$content.load('html/'+pagina+'.html', function(){
-						$('#loader').fadeOut(vel, function(){
-							$content.fadeIn(vel);
-							
-							switch(callBack){
-								case 'getTestesConvidados':
-									getTestesConvidados();
-									break;
-								default:
-									break;
-							}
-						});
-					});
-				});
-			});
-		}
-
-		/*converter json to object*/
-		function parseJSON(data) {
-	    	return window.JSON && window.JSON.parse ? window.JSON.parse( data ) : (new Function("return " + data))(); 
-		}
 
 		function dataFromBackground(method, data, callback){
 			chrome.extension.sendRequest({redmine: method, data: data}, function(response) {					
@@ -99,34 +58,43 @@
 			var $content = $("#time-tracker-cnt");
 			var $loader = $("#loader");
 			var vel = 500;
-			//
 			$content.fadeOut(function(){
 				$content.html(html);
 				$content.fadeIn(vel);
 			});
 		}
+		function renderMustache(path, obj){
+			$.ajax({
+	            url: chrome.extension.getURL(path),
+	            cache: true,
+	            success: function (data) {
+	                changeRender(Mustache.render(data, obj));
+	            }
+	        });
+		}
 
+		/*	RENDER TEMPLATES 	*/
 		function renderListTaskTimes(localst){
-			var string = '<h1>Started Tasks</h1><ul class="list"><hr/>';
+			var objectTemplate = {
+				tasks: []
+			};
 			for(var idx in localst){
-				var regex =/\d*$/gi;
-				var regArray = regex.exec(idx);
-				string += '<li data-id="'+regArray[0]+'" data-src="'+idx+'"><a href="'+idx+'" title="'+idx+'" target="_blank">Task:  '+regArray[0]+'</a><a class="bt bt-stop pull-right time-tracker-popup-reset"><span class="glyphicon glyphicon-trash"></span></a><a href="'+idx+'" title="'+idx+'" target="_blank" class="bt bt-reset pull-right"><span class="glyphicon glyphicon-folder-open"></span></a></li>';
+				var task = parseJSONTimeTracker(localst[idx]);
+				task.hasDateBackground = task.dateBackground ? true : false;
+				task.timeFormatted = secondsToHmsTimeTracker(task.time);
+				objectTemplate.tasks.push(task);
 			}
-			string += "</ul>";
-			return string;
+			renderMustache('../templates/mustache/list-task.html', objectTemplate);
 		}
-
-		function renderRemoveTaskTime(taskId, datasrc){
-			var string = '<h1><a href="'+datasrc+'" title="'+datasrc+'" target="_blank">Task '+taskId+'</a></h1><hr/><div class="actions"><a data-id="'+taskId+'" class="bt bt-stop bt-stop-time">Clear Time</a><a class="bt bt-reset bt-back-init">Cancel</a></div>';
-			return string;
+		function renderRemoveTaskTime(task){
+			task.hasDateBackground = task.dateBackground ? 'Yes' : 'No';
+			task.timeFormatted = secondsToHmsTimeTracker(task.time);
+			renderMustache('../templates/mustache/remove-task.html', task);
 		}
-
 		function renderInitialPage(){
 			dataFromBackground("listTaskTimes", null, function(localst){
-				changeRender(renderListTaskTimes(localst));
+				renderListTaskTimes(localst);
 			});
 		}
-
 	});
 })(jQuery);

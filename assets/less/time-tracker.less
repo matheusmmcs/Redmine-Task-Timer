@@ -1,3 +1,16 @@
+@colorBackground:		#F0F8FF;
+@colorBackgroundDark:	#DEE3F8;
+@colorGray:				#aaa;
+
+@colorBlueClean: 		#3498db;
+@colorBlueMedium: 		#428bca;
+@colorBlueDark: 		darken(#428bca, 5%);
+@colorGreenClean:		#39D47B;
+@colorGreenMedium:		#2ecc71;
+@colorGreenDark:		darken(#2ecc71, 5%);
+
+@minWidth:				350px;
+
 #time-tracker-cnt{
 	display: block;
 	margin-top: 5px;
@@ -17,7 +30,29 @@
 			text-decoration: none;
 		}
 
+		&.bt-green{
+  			color: #ffffff;
+  			background-color: @colorGreenClean;
+  			border-color: @colorGreenMedium;
+  			&:hover, &:focus, &:active, &.active{
+  				color: #ffffff;
+  				background-color: @colorGreenMedium;
+  				border-color: @colorGreenDark;
+  			}
+		}
+
 		&.bt-start{
+  			color: #ffffff;
+  			background-color: #428bca;
+  			border-color: #357ebd;
+  			&:hover, &:focus, &:active, &.active{
+  				color: #ffffff;
+  				background-color: #3276b1;
+  				border-color: #285e8e;
+  			}
+		}
+
+		&.bt-config{
   			color: #ffffff;
   			background-color: #428bca;
   			border-color: #357ebd;
@@ -64,15 +99,9 @@
 	}
 }
 
-@colorBackground:		#F0F8FF;
-@colorBackgroundDark:	#DEE3F8;
 
-@colorBlueClean: 		#3498db;
-@colorBlueDark: 		darken(#428bca, 5%);
-@colorGreenClean:		#2ecc71;
-@colorGreenDark:		#27ae60;
 
-@minWidth:				350px;
+
 
 #time-tracker-popup{
 	*{
@@ -97,6 +126,31 @@
 		color: @colorBlueDark;
 		&:visited{
 			color: @colorBlueDark;
+		}
+	}
+	dl{
+		display: block;
+		font-size: 11pt;
+		margin: 3px 0;
+		padding: 6px 8px 6px;
+		background: #D7EAFA;
+		border-bottom: 1px solid @colorBackgroundDark;
+		dt{
+			display: inline-block;
+			margin: 0;
+			padding: 0;
+			width: 20%;
+			text-align: left;
+			font-weight: bold;
+			color: @colorBlueMedium;
+		}
+		dd{
+			display: inline-block;
+			margin: 0;
+			padding: 0;
+			width: 55%;
+			font-weight: bold;
+			color: @colorGray;
 		}
 	}
 
@@ -179,5 +233,11 @@
 	}
 	.margin-0auto{
 		margin: 0 auto;
+	}
+	.color-white{
+		color: white;	
+	}
+	.opacity-50{
+		opacity: 0.5;
 	}
 }

@@ -1,9 +1,32 @@
 
 //GLOBAL VARS (defined in options.html)
-var intervalToPersist = 1000;
 var verifyRedmineUrl = true;
+var isShowNotification = true;
+var timeToCloseNotifications = 4000;
 
 var idTask = 'taskNumber';
+
+var EnumButtons = {
+	PROGRESS: {
+		buttons : [
+			{ title: "Start", iconUrl: "http://redmine.infoway-pi.com.br/images/add.png" },
+			{ title: "Send Email", iconUrl: "http://redmine.infoway-pi.com.br/images/add.png"}
+		],
+		actions : function(){
+			chrome.notifications.onButtonClicked.addListener(function(notificationId, buttonIndex){
+				//as all notifications have the same id, just use button index
+				if(buttonIndex == 0){
+					alert("CALL");
+				}
+				if(buttonIndex == 1){
+					alert("EMAIL");
+				}
+			})
+		}
+	},
+	SUBMIT: null,
+	CLEAN: null
+}
 
 //when atualize tabs
 chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
@@ -17,6 +40,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
 	    		//verify if the page has redmine name to insert plugin
 	    		if(verifyRedmineUrl && tab.url.toLowerCase().indexOf("redmine") != -1){
 	    			chrome.tabs.executeScript(tabId, {file: "js/jquery.js"});
+	    			chrome.tabs.executeScript(tabId, {file: "js/utils.js"});
 					chrome.tabs.executeScript(tabId, {file: "js/counter.js"});
 					chrome.tabs.insertCSS(tabId, {file: "css/time-tracker.css"});
 	    		}
@@ -29,44 +53,62 @@ chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
 //when a extension send request
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 	switch(request.redmine){
-		//receber, alterar e remover os tempos do usuario
-		case "getPersistInterval":
-			sendResponse(intervalToPersist);
-			break;
 		case "setTaskTime":
-			var requestObject = parseJSON(request.data);
+			var requestObject = parseJSONTimeTracker(request.data);
 			localStorage.setItem(requestObject[idTask], request.data);
 			break;
 		case "getTaskTime":
 			var value = request.data[idTask] ? localStorage.getItem(request.data[idTask]) : null;
-			value = value ? parseJSON(value) : value;
+			value = value ? parseJSONTimeTracker(value) : value;
 			sendResponse(value);
-			if(value){
-				showNotification("This task already has "+secondsToHms(value.time)+" hours");
+			if(value && request.data['notification']){
+				showNotification("Task Progress", "This task already has "+secondsToHmsTimeTracker(value.time)+" hours.", EnumButtons.SUBMIT);
 			}
 			break;
+		case "eraseTaskTime":
+			localStorage.removeItem(request.data[idTask]);
+			sendResponse(localStorage);
+			showNotification("Task Erase", "This task time has been erased!", EnumButtons.CLEAN);
+			break;
 		case "removeTaskTime":
-			localStorage.removeItem(request.data.taskNumber);
-			showNotification("Task time has been submitted!");
+			localStorage.removeItem(request.data[idTask]);
+			showNotification("Submit Task Time", "Task time has been submitted!", EnumButtons.SUBMIT);
 			break;
 		case "listTaskTimes":
 			sendResponse(localStorage);
-			/*
-			for (var i = 0; i < localStorage.length; i++){
-				console.log(i, localStorage.key(i), localStorage.getItem(localStorage.key(i)));
-			}
-			*/
 			break;
 	}
 });
 
 //NOTIFICATION
-function showNotification(title, message){
-	if (window.webkitNotifications.checkPermission() == 0) {
-	    var notification = window.webkitNotifications.createNotification('../images/icon16.png', title, message);
-	    notification.show();
-	} else {
-	    window.webkitNotifications.requestPermission();
+function showNotification(title, message, btns){
+	if(isShowNotification){
+		title = title ? title : " ";
+		message = message ? message : " ";
+		//if havent btns, buttons or actions, do the simple
+		if(!btns || !btns.buttons || !btns.actions){
+			btns = {
+				buttons: undefined,
+				actions: function(){}
+			}
+		}
+		chrome.notifications.create("redmineTimeTracker", {   
+				type: 'basic', 
+				iconUrl: '../images/icon48.png',
+				title: title, 
+				message: message,
+				priority: 0,
+				buttons: btns.buttons
+			},
+			function(newId) {
+				setTimeout(function(){
+					chrome.notifications.clear(newId, function(){});
+				}, timeToCloseNotifications);
+			}
+		);
+		if( typeof(btns.actions) === "function" ){
+			btns.actions();
+		}
 	}
 }
 
@@ -116,19 +158,7 @@ function openPage(page) {
 
 //----------------------------------------------------------------------------------------------------------------------------------------------
 
-function secondsToHms(t) {
-	if(!t){
-		t = 0;
-	}
-	var t = parseInt(t, 10);
-    var h   = Math.floor(t / 3600);
-    var m = Math.floor((t - (h * 3600)) / 60);
-    var s = t - (h * 3600) - (m * 60);
-    h = h < 10 ? "0"+h : h;
-    m = m < 10 ? "0"+m : m;
-    s = s < 10 ? "0"+s : s;
-	return h+':'+m+':'+s;
-}
+
 /*método genérico para realizar ajax*/
 function ajax(caminho, tipo, dados){
 	var retorno;
@@ -146,10 +176,4 @@ function ajax(caminho, tipo, dados){
 		}
 	});
 	return retorno;
-}
-function parseJSON(data) {
-	return window.JSON && window.JSON.parse ? window.JSON.parse(data) : (new Function("return " + data))(); 
-}
-function stringfyJSON(data){
-	return window.JSON && window.JSON.stringify ? window.JSON.stringify(data) : (new Function("return " + data))();
 }

@@ -17,7 +17,7 @@
     "unlimitedStorage"
   ],
   "background": {
-    "scripts": ["js/jquery.js", "js/background.js"]
+    "scripts": ["js/jquery.js", "js/utils.js", "js/background.js"]
   },
   "icons": { 
     "16": "images/icon16.png",

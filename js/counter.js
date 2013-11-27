@@ -1,14 +1,6 @@
 (function($){
 	$(document).ready(function(){
 
-		//aux functions
-		function stringifyJSON(data){
-			return window.JSON && window.JSON.stringify ? window.JSON.stringify(data) : (new Function("return " + data))();
-		}
-		function parseJSON(data) {
-			return window.JSON && window.JSON.parse ? window.JSON.parse(data) : (new Function("return " + data))(); 
-		}
-
 		//get description to change only redmine pages
 		var metaDesc = $('meta[name=description]').attr("content");
 
@@ -23,17 +15,7 @@
 					}
 				}
 				this.atualizeDateBackground = function(dateBackground){
-					if(dateBackground != null && dateBackground != undefined){
-						this.dateBackground = dateBackground;
-					}
-				}
-				this.atualize = function(time, dateBackground){
-					this.atualizeTime(time);
-					this.atualizeDateBackground(dateBackground);
-				}
-				//clear date backbround
-				this.clearDateBackground = function(){
-					this.dateBackground = undefined;
+					this.dateBackground = dateBackground;
 				}
 				//change task by taskurl
 				this.changeTask = function(taskUrl, taskNumber){
@@ -116,46 +98,22 @@
 				$reset = $('#'+idReset);
 
 				//when initialize, atualize clock to the previous value
-				dataFromBackground("getTaskTime", { 'taskNumber' : numberTask }, function(data){					
+				dataFromBackground("getTaskTime", { 'taskNumber' : numberTask, 'notification' : true }, function(data){					
 					timeObject = data ? new TimeObject(data) : new TimeObject({ taskUrl : window.location.href });
 
 					//if is running in background
 					if(timeObject.dateBackground){
-						/*
-						//TODO
-						timeObject.time = new Date().getTime() - timeObject.dateBackground + timeObject.time;
+						var newTime = changeActualTimeByDateBackgroundTimeTracker(timeObject.time, timeObject.dateBackground);
 						timeObject.dateBackground = undefined;
-						dataFromBackground("setTaskTime", stringifyJSON(timeObject));
-						atualizeClock(timeObject.time);
+						dataFromBackground("setTaskTime", stringifyJSONTimeTracker(timeObject));
+						atualizeClock(newTime);
 						startTime();
-						*/
-						atualizeClock(timeObject.time);
 					}else{
 						atualizeClock(timeObject.time);
 					}
-					
-					//initialize a function to persist the time to determinated task
-					dataFromBackground("getPersistInterval", null, function(time){
-						var saveInterval = setInterval(function(){
-							if($timeInput){
-								var valueFromInput = parseFloat($timeInput.val());
-								valueFromInput = valueFromInput ? (valueFromInput*3600) : 0;
-								if(valueFromInput != 0){
-									//send data to background
-									var actualDate = new Date();
-									timeObject.atualizeTime(valueFromInput);
-									timeObject.atualizeDateBackground(actualDate.getTime());
-									dataFromBackground("setTaskTime", stringifyJSON(timeObject));
-								}
-							}
-						}, time);
-					});
 				});
 
 				//EVENTS
-				//event start when close tab:
-				//dateBackground: new Date().getTime()
-
 				$(document).on("click", "#"+idStartStop, function(e){
 					e.preventDefault();
 					//garantee a stop/start button exists
@@ -206,13 +164,20 @@
 						$stopStart.html(EnumState.STOP);
 						$stopStart.attr("class", EnumState.STOP_CLASS);
 						$stopStart.attr("data-started", true);
-						//set new value to fild
+
+						//set new value to field
 						var value = parseFloat($timeInput.val());
 						var seconds = value ? (value*3600) : 0;
 						atualizeClock(seconds);
 						timerFunction = setInterval(function(){							
 							seconds++;
+							timeObject.atualizeTime(seconds);
+							timeObject.atualizeDateBackground(new Date().getTime());
 							atualizeClock(seconds);
+							if(timeObject.validate()){
+								console.log("setTaskTime: ", timeObject);
+								dataFromBackground("setTaskTime", stringifyJSONTimeTracker(timeObject));
+							}
 						}, 1000);
 					}
 				}
@@ -220,10 +185,14 @@
 				//method to stop the time when the button is clicked
 				function stopTime(){
 					if($stopStart){
-						$stopStart.attr("data-started", false);
-						clearInterval(timerFunction);
+						//change button
 						$stopStart.html(EnumState.START);
+						$stopStart.attr("data-started", false);
 						$stopStart.attr("class", EnumState.START_CLASS);
+						//stop timerfunction and set dateBackground equals null
+						clearInterval(timerFunction);
+						timeObject.atualizeDateBackground(null);
+						dataFromBackground("setTaskTime", stringifyJSONTimeTracker(timeObject));
 					}
 				}
 
@@ -234,11 +203,9 @@
 							stopTime();
 							$clock.html(EnumMessages.CLOCK);
 							$timeInput.val("");
-							timeObject.atualize({
-								time: 0
-							});
-							timeObject.clearDateBackground();
-							dataFromBackground("setTaskTime", stringifyJSON(timeObject));
+							timeObject.atualizeTime(0);
+							timeObject.atualizeDateBackground(null);
+							dataFromBackground("setTaskTime", stringifyJSONTimeTracker(timeObject));
 						}
 					}
 				}
@@ -251,7 +218,7 @@
 					}
 					//atualize clock
 					if($clock){
-						$clock.html(secondsToHms(s));
+						$clock.html(secondsToHmsTimeTracker(s));
 					}
 				}
 
@@ -263,16 +230,7 @@
 					});
 				}	
 
-				function secondsToHms(t) {
-					var t = parseInt(t, 10);
-				    var h   = Math.floor(t / 3600);
-				    var m = Math.floor((t - (h * 3600)) / 60);
-				    var s = t - (h * 3600) - (m * 60);
-				    h = h < 10 ? "0"+h : h;
-				    m = m < 10 ? "0"+m : m;
-				    s = s < 10 ? "0"+s : s;
-	    			return h+':'+m+':'+s;
-				}
+				
 			}
 		}
 	});

@@ -1,0 +1,18 @@
+<h1>
+	<a href="{{taskUrl}}" title="{{taskNumber}}" target="_blank">Task {{taskNumber}}</a>
+</h1>
+<hr/>
+<div>
+	<dl>
+		<dt>Started: </dt>
+		<dd>{{hasDateBackground}}</dd>
+	</dl>
+	<dl>
+		<dt>Time: </dt>
+		<dd>{{timeFormatted}}</dd>
+	</dl>
+</div>
+<div class="actions">
+	<a data-id="{{taskNumber}}" class="bt bt-stop time-tracker-popup-erase-time">Erase Time</a>
+	<a class="bt bt-reset bt-back-init">Cancel</a>
+</div>
