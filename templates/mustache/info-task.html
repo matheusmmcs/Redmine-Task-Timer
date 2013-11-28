@@ -1,5 +1,6 @@
 <h1>
 	<a href="{{taskUrl}}" title="{{taskNumber}}" target="_blank">Task {{taskNumber}}</a>
+	<a data-id="{{taskNumber}}" class="bt bt-red pull-right time-tracker-popup-erase-time"><span class="glyphicon glyphicon-trash"></span></a>
 </h1>
 <hr/>
 <div>
@@ -13,6 +14,6 @@
 	</dl>
 </div>
 <div class="actions">
-	<a data-id="{{taskNumber}}" class="bt bt-stop time-tracker-popup-erase-time">Erase Time</a>
+	<a href="{{taskUrl}}" title="{{taskNumber}}" target="_blank" class="bt bt-blue">View Task</a>
 	<a class="bt bt-reset bt-back-init">Cancel</a>
 </div>

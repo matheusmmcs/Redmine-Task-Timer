@@ -53,20 +53,6 @@
 				this.validate();
 			}
 
-			var EnumMessages = {
-				RESET: "Are you sure that wish to RESET the time?",
-				CLOCK: "00:00:00"
-			}		
-
-			var EnumState = {
-				START:"Start",
-				STOP:"Stop",
-				RESET:"Reset",
-				START_CLASS:"bt bt-start",
-				STOP_CLASS:"bt bt-stop",
-				RESET_CLASS:"bt bt-reset"
-			}
-
 			//get element where set the time hours
 			var $timeInput = $("#time_entry_hours");
 
@@ -90,7 +76,7 @@
 
 				//has time-tracker? case no, insert a html to start/stop timer, and show the time
 				if(!$("#time-tracker-cnt").length){
-					$timeInput.parent().append('<div id="time-tracker-cnt"><div id="'+idClock+'" class="clk">'+EnumMessages.CLOCK+'</div><a id="'+idStartStop+'" class="'+EnumState.START_CLASS+'">'+EnumState.START+'</a><a id="'+idReset+'" class="'+EnumState.RESET_CLASS+'">'+EnumState.RESET+'</a></div>');
+					$timeInput.parent().append('<div id="time-tracker-cnt"><div id="'+idClock+'" class="clk">'+EnumTimeTrackerMessages.CLOCK+'</div><a id="'+idStartStop+'" class="'+EnumTimeTrackerState.START_CLASS+'">'+EnumTimeTrackerState.START+'</a><a id="'+idReset+'" class="'+EnumTimeTrackerState.RESET_CLASS+'">'+EnumTimeTrackerState.RESET+'</a></div>');
 				}
 				//atualize variables DOM reference
 				$stopStart = $("#"+idStartStop);
@@ -161,8 +147,8 @@
 				function startTime(){
 					if($stopStart){
 						//change button
-						$stopStart.html(EnumState.STOP);
-						$stopStart.attr("class", EnumState.STOP_CLASS);
+						$stopStart.html(EnumTimeTrackerState.STOP);
+						$stopStart.attr("class", EnumTimeTrackerState.STOP_CLASS);
 						$stopStart.attr("data-started", true);
 
 						//set new value to field
@@ -186,9 +172,9 @@
 				function stopTime(){
 					if($stopStart){
 						//change button
-						$stopStart.html(EnumState.START);
+						$stopStart.html(EnumTimeTrackerState.START);
 						$stopStart.attr("data-started", false);
-						$stopStart.attr("class", EnumState.START_CLASS);
+						$stopStart.attr("class", EnumTimeTrackerState.START_CLASS);
 						//stop timerfunction and set dateBackground equals null
 						clearInterval(timerFunction);
 						timeObject.atualizeDateBackground(null);
@@ -198,10 +184,10 @@
 
 				function resetTime(){
 					if($clock && $stopStart){
-						var resp = confirm(EnumMessages.RESET);
+						var resp = confirm(EnumTimeTrackerMessages.RESET);
 						if(resp==true){
 							stopTime();
-							$clock.html(EnumMessages.CLOCK);
+							$clock.html(EnumTimeTrackerMessages.CLOCK);
 							$timeInput.val("");
 							timeObject.atualizeTime(0);
 							timeObject.atualizeDateBackground(null);

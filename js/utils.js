@@ -21,3 +21,16 @@ function changeActualTimeByDateBackgroundTimeTracker(actualTime, dateBackground)
 	var newTime = (new Date().getTime() - dateBackground) / 1000; //ms to s
 	return newTime + actualTime;
 }
+
+var EnumTimeTrackerMessages = {
+	RESET: "Are you sure that wish to RESET the time?",
+	CLOCK: "00:00:00"
+}
+var EnumTimeTrackerState = {
+	START:"Start",
+	STOP:"Stop",
+	RESET:"Reset",
+	START_CLASS:"bt bt-start",
+	STOP_CLASS:"bt bt-stop",
+	RESET_CLASS:"bt bt-reset"
+}

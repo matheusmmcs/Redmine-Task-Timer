@@ -8,8 +8,7 @@
 		<li data-id="{{taskNumber}}" data-src="{{taskUrl}}">
 			<a href="{{taskUrl}}" title="" target="_blank">Task: {{taskNumber}}</a>
 			<span class="color-white opacity-50">/ Time: {{timeFormatted}}</span>
-			<a class="bt bt-stop pull-right time-tracker-popup-reset"><span class="glyphicon glyphicon-trash"></span></a>
-			<a href="{{taskUrl}}" title="Task {{taskNumber}}" target="_blank" class="bt bt-reset pull-right"><span class="glyphicon glyphicon-folder-open"></span></a>
+			<a class="bt bt-gray color-blue pull-right time-tracker-popup-task-info"><span class="glyphicon glyphicon-dashboard"></span></a>
 			{{#hasDateBackground}}
 				<a class="bt bt-stop pull-right time-tracker-popup-start-stop"><span class="glyphicon glyphicon-pause"></span></a>
 			{{/hasDateBackground}}

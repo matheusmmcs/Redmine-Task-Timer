@@ -18,22 +18,25 @@
 		}
 
 		//show remove view of task
-		$(document).on("click", ".time-tracker-popup-reset", function(e){
+		$(document).on("click", ".time-tracker-popup-task-info", function(e){
 			e.preventDefault();
 			var $li = $(this).closest("li");
 			var dataid = $li.attr("data-id");
 			dataFromBackground("getTaskTime", { taskNumber : dataid, notification : false }, function(task){
-				renderRemoveTaskTime(task);
+				renderInfoTaskTime(task);
 			});
 		});
 
 		//
 		$(document).on("click", ".time-tracker-popup-erase-time", function(e){
 			e.preventDefault();
-			var dataid = $(this).attr("data-id");
-			dataFromBackground("eraseTaskTime", { taskNumber : dataid }, function(tasks){
-				renderInitialPage();
-			});
+			var resp = confirm(EnumTimeTrackerMessages.RESET);
+			if(resp==true){
+				var dataid = $(this).attr("data-id");
+				dataFromBackground("eraseTaskTime", { taskNumber : dataid }, function(tasks){
+					renderInitialPage();
+				});
+			}
 		});
 
 		//back to initial view
@@ -66,7 +69,7 @@
 		function renderMustache(path, obj){
 			$.ajax({
 	            url: chrome.extension.getURL(path),
-	            cache: true,
+	            cache: false,
 	            success: function (data) {
 	                changeRender(Mustache.render(data, obj));
 	            }
@@ -86,10 +89,10 @@
 			}
 			renderMustache('../templates/mustache/list-task.html', objectTemplate);
 		}
-		function renderRemoveTaskTime(task){
+		function renderInfoTaskTime(task){
 			task.hasDateBackground = task.dateBackground ? 'Yes' : 'No';
 			task.timeFormatted = secondsToHmsTimeTracker(task.time);
-			renderMustache('../templates/mustache/remove-task.html', task);
+			renderMustache('../templates/mustache/info-task.html', task);
 		}
 		function renderInitialPage(){
 			dataFromBackground("listTaskTimes", null, function(localst){
