@@ -10,10 +10,22 @@
 		$(document).on("click", ".time-tracker-popup-task-info", function(e){
 			e.preventDefault();
 			var $this = $(this);
-			var dataid = $this.attr("data-id");			
-			dataFromBackground("getTaskTime", { taskNumber : dataid, notification : false }, function(obj){
-				renderInfoTaskTime(obj.task);
+			var dataid = $this.attr("data-id");
+			renderInfoTaskTime(dataid);
+		});
+
+		$(document).on("click", ".bt-time-tracker-save", function(e){
+			e.preventDefault();
+			dataFromBackground("getConfiguration", null, function(config){
+				var showNotification = $("#showNotification").is(':checked');
+				var timeNotification = $("#timeNotification").val();
+				config.isShowNotification = showNotification;
+				if(timeNotification){
+					config.timeToCloseNotifications = timeNotification;
+				}
+				dataFromBackground("setConfiguration", { configs : config });
 			});
+			renderListTaskTimes();
 		});
 
 		//
@@ -40,6 +52,10 @@
 			}
 		});
 
+		$(document).on("click", ".time-tracker-popup-config", function(e){
+			e.preventDefault();
+			renderConfiguration();
+		});
 
 		//back to initial view
 		$(document).on("click", ".bt-back-init", function(e){
@@ -74,7 +90,11 @@
 	            cache: false,
 	            success: function (data) {
 	            	html = Mustache.to_html(data, obj);
-	            	changeRender(html);
+	            	if(jqueryObject){
+	            		jqueryObject.html(html);
+	            	}else{
+	            		changeRender(html);
+	            	}
 	            }
 	        });
 		}
@@ -91,7 +111,6 @@
 					task.timeFormatted = secondsToHmsTimeTracker(task.time);
 					objectTemplate.tasks.push(task);
 				}
-				console.log(objectTemplate);
 				renderMustache('../templates/mustache/list-task.mustache', objectTemplate);
 
 				//update informations
@@ -121,11 +140,25 @@
 				},500);
 			});
 		}
-		function renderInfoTaskTime(task){
-			console.log(task)
-			task.started = task.started ? 'Yes' : 'No';
-			task.timeFormatted = secondsToHmsTimeTracker(task.time);
-			renderMustache('../templates/mustache/info-task.mustache', task);
+		function renderInfoTaskTime(dataid){
+			dataFromBackground("getTaskTime", { taskNumber : dataid, notification : false }, function(obj){
+				var task = obj.task;
+				renderMustache('../templates/mustache/info-task.mustache', task);
+
+				interval = setInterval(function(){
+					dataFromBackground("getTaskTime", { taskNumber : dataid, notification : false }, function(newObj){
+						task = newObj.task;
+						task.started = task.started ? 'Yes' : 'No';
+						task.timeFormatted = secondsToHmsTimeTracker(task.time);
+						renderMustache('../templates/mustache/info.mustache', task, $("#task-info"));
+					});
+				},500);
+			});
+		}
+		function renderConfiguration(){
+			dataFromBackground("getConfiguration", null, function(config){
+				renderMustache('../templates/mustache/config.mustache', config);
+			});
 		}
 	});
 })(jQuery);

@@ -1,0 +1,18 @@
+<h1>
+	Configurations
+</h1>
+<hr/>
+<div>
+	<dl class="width50">
+		<dt>Show Notification: </dt>
+		<dd><input type="checkbox" name="showNotification" id="showNotification" {{#isShowNotification}}checked="checked"{{/isShowNotification}} /></dd>
+	</dl>
+	<dl class="width50">
+		<dt>Auto-close Time (ms): </dt>
+		<dd><input type="text" name="timeNotification" id="timeNotification" value="{{timeToCloseNotifications}}"/></dd>
+	</dl>
+</div>
+<div class="actions">
+	<a href="#" class="bt bt-blue bt-time-tracker-save">Save</a>
+	<a class="bt bt-reset bt-back-init">Back</a>
+</div>

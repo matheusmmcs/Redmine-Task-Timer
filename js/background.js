@@ -1,8 +1,10 @@
 
 //GLOBAL VARS (defined in options.html)
-var verifyRedmineUrl = true;
-var isShowNotification = true;
-var timeToCloseNotifications = 4000;
+var CONFIGS = {
+	verifyRedmineUrl: true,
+	isShowNotification: true,
+	timeToCloseNotifications: 4000
+}
 
 var idTask = 'taskNumber';
 
@@ -39,7 +41,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
 	    	var tab = tabs[i];
 	    	if(tab && tab.id == tabId){
 	    		//verify if the page has redmine name to insert plugin
-	    		if(verifyRedmineUrl && tab.url.toLowerCase().indexOf("redmine") != -1){
+	    		if(CONFIGS.verifyRedmineUrl && tab.url.toLowerCase().indexOf("redmine") != -1){
 	    			chrome.tabs.executeScript(tabId, {file: "js/jquery.js"});
 	    			chrome.tabs.executeScript(tabId, {file: "js/utils.js"});
 					chrome.tabs.executeScript(tabId, {file: "js/counter.js"});
@@ -120,6 +122,14 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 		case "listTaskTimes":
 			sendResponse(localStorage);
 			break;
+		case "getConfiguration":
+			sendResponse(CONFIGS);
+			break;
+		case "setConfiguration":
+			var newConfigs = request.data["configs"];
+			console.log(newConfigs)
+			CONFIGS = newConfigs;
+			break;
 	}
 });
 
@@ -146,7 +156,7 @@ function loadTaskTime(id){
 
 //NOTIFICATION
 function showNotification(title, message, btns){
-	if(isShowNotification){
+	if(CONFIGS.isShowNotification){
 		title = title ? title : " ";
 		message = message ? message : " ";
 		//if havent btns, buttons or actions, do the simple
@@ -167,7 +177,7 @@ function showNotification(title, message, btns){
 			function(newId) {
 				setTimeout(function(){
 					chrome.notifications.clear(newId, function(){});
-				}, timeToCloseNotifications);
+				}, CONFIGS.timeToCloseNotifications);
 			}
 		);
 		if( typeof(btns.actions) === "function" ){
