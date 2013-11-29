@@ -1,5 +1,6 @@
-@colorBackground:		#F0F8FF;
-@colorBackgroundDark:	#DEE3F8;
+@colorBackground:		#FFF;//#F0F8FF;
+@colorBackgroundMedium:	#F9F9F9;
+@colorBackgroundDark:	#EEE;
 @colorGray:				#aaa;
 @colorGrayDark:			#555;
 
@@ -123,8 +124,8 @@
 		font-size: 11pt;
 		margin: 3px 0;
 		padding: 6px 8px 6px;
-		background: #D7EAFA;
-		border-bottom: 1px solid @colorBackgroundDark;
+		background: @colorBackgroundMedium;
+		border-bottom: 1px solid darken(@colorBackgroundDark, 5%);
 		dt{
 			display: inline-block;
 			margin: 0;

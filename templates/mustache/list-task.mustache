@@ -1,0 +1,20 @@
+<h1>
+	Redmine Time Tracker 
+	<a class="bt bt-config pull-right time-tracker-popup-config"><span class="glyphicon glyphicon-cog"></span></a>
+</h1>
+<ul id="task-list" class="list">
+	<hr/>
+	{{#tasks}}	
+	<li data-id="{{taskNumber}}" data-src="{{taskUrl}}">
+		<a href="{{taskUrl}}" title="" target="_blank">Task: {{taskNumber}}</a>
+		<span class="color-white opacity-50">/ Time: <b class="task-time">{{timeFormatted}}</b></span>
+		<a data-id="{{taskNumber}}" class="bt bt-gray color-blue pull-right time-tracker-popup-task-info"><span class="glyphicon glyphicon-info-sign"></span></a>
+		{{#started}}
+			<a data-id="{{taskNumber}}" data-started="true" class="bt bt-stop pull-right time-tracker-popup-start-stop"><span class="glyphicon glyphicon-pause"></span></a>
+		{{/started}}
+		{{^started}}
+			<a data-id="{{taskNumber}}" data-started="false" class="bt bt-green pull-right time-tracker-popup-start-stop"><span class="glyphicon glyphicon-play"></span></a>
+		{{/started}}
+	</li>
+	{{/tasks}}
+</ul>

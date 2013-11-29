@@ -25,7 +25,8 @@ var EnumButtons = {
 		}
 	},
 	SUBMIT: null,
-	CLEAN: null
+	CLEAN: null,
+	INITIALIZE: null
 }
 
 //when atualize tabs
@@ -53,32 +54,95 @@ chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
 //when a extension send request
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 	switch(request.redmine){
-		case "setTaskTime":
-			var requestObject = parseJSONTimeTracker(request.data);
-			localStorage.setItem(requestObject[idTask], request.data);
+		case "initializeTaskTime":
+			var task = request.data['task'];
+			console.log("initializeTaskTime", task);
+			if(task){
+				var taskLoaded = loadTaskTime(task[idTask]);
+				//garantee of no previous task has stored
+				if(!taskLoaded){
+					//garantee when initialized, its is started
+					task.started = true;
+					saveTaskTime(task[idTask], task);
+					showNotification("Task initialized", "The task ["+task[idTask]+"] has been initialized!", EnumButtons.INITIALIZE);
+				}
+			}
 			break;
 		case "getTaskTime":
-			var value = request.data[idTask] ? localStorage.getItem(request.data[idTask]) : null;
-			value = value ? parseJSONTimeTracker(value) : value;
-			sendResponse(value);
-			if(value && request.data['notification']){
-				showNotification("Task Progress", "This task already has "+secondsToHmsTimeTracker(value.time)+" hours.", EnumButtons.SUBMIT);
+			var task = loadTaskTime(request.data[idTask]);
+			//console.log("getTaskTime", task);
+			//if hasnt task, whe need initialize a new task
+			if(task){
+				task = new TimeTrackerObject(task);
+				sendResponse({
+					initialized: true,
+					task: task
+				});
+				if(request.data['notification']){
+					showNotification("Task Progress", "This task already has "+secondsToHmsTimeTracker(task.time)+" hours.", EnumButtons.SUBMIT);
+				}
+			}else{
+				sendResponse({
+					initialized: false
+				});
 			}
+			break;
+		case "startTaskTime":
+			var id = request.data[idTask];
+			var task = loadTaskTime(id);
+			console.log("startTaskTime", task);
+			if(task){
+				task.started = true;
+				saveTaskTime(id, task);
+			}
+			//showNotification("Task Erase", "This task time has been erased!", EnumButtons.CLEAN);
+			break;
+		case "stopTaskTime":
+			var id = request.data[idTask];
+			var task = loadTaskTime(id);
+			console.log("stopTaskTime", task);
+			if(task){
+				task.started = false;
+				task.dateBackground = undefined;
+				saveTaskTime(id, task);				
+			}
+			//showNotification("Task Erase", "This task time has been erased!", EnumButtons.CLEAN);
 			break;
 		case "eraseTaskTime":
 			localStorage.removeItem(request.data[idTask]);
-			sendResponse(localStorage);
-			showNotification("Task Erase", "This task time has been erased!", EnumButtons.CLEAN);
+			showNotification("Task Erase", "The task time ["+request.data[idTask]+"] has been erased!", EnumButtons.CLEAN);
+			sendResponse(true);
 			break;
-		case "removeTaskTime":
+		case "submitTaskTime":
 			localStorage.removeItem(request.data[idTask]);
-			showNotification("Submit Task Time", "Task time has been submitted!", EnumButtons.SUBMIT);
+			showNotification("Submit Task Time", "The task time ["+request.data[idTask]+"] has been submitted!", EnumButtons.SUBMIT);
 			break;
 		case "listTaskTimes":
 			sendResponse(localStorage);
 			break;
 	}
 });
+
+//START/STOP/CONTINUE LOGIC
+var timerFunction = setInterval(function(){
+	for(var id in localStorage){
+		var task = loadTaskTime(id);
+		task.atualizeClock();		
+		saveTaskTime(task[idTask], task);
+	}
+},1000);
+
+function saveTaskTime(id, task){
+	localStorage.setItem(id, stringifyJSONTimeTracker(task));
+}
+function loadTaskTime(id){
+	var task = localStorage.getItem(id);
+	if(task){
+		return new TimeTrackerObject(parseJSONTimeTracker(task));
+	}else{
+		return null;
+	}
+}
 
 //NOTIFICATION
 function showNotification(title, message, btns){
