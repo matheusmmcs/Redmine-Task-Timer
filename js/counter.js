@@ -77,9 +77,7 @@ window.hasPluginTimeTracker = true;
 				});
 
 				$(document).on("submit", "#"+idSubmit, function(e){
-					dataFromBackground("submitTaskTime", {
-						task: window.location.href
-					});
+					//dataFromBackground("submitTaskTime", { 'taskNumber' : numberTask });
 				});
 
 				function setButtonStoped(){
