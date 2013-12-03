@@ -24,7 +24,7 @@ window.hasPluginTimeTracker = true;
 				//var like a static object when time is defined
 				var timeObject;
 				//task number of this url
-				var numberTask = getNumberFromTaskUrlTimeTracker(window.location.href);
+				var numberTask = getNumberFromTaskTimeTracker(window.location.href);
 
 				//has time-tracker? case no, insert a html to start/stop timer, and show the time
 				if(!$("#time-tracker-cnt").length){
@@ -104,7 +104,11 @@ window.hasPluginTimeTracker = true;
 						dataFromBackground("startTaskTime", { 'taskNumber' : numberTask });
 					}else{
 						var newTask = new TimeTrackerObject({ taskUrl : window.location.href });
-						dataFromBackground("initializeTaskTime", { 'task' : newTask });
+						if(newTask.validate()){
+							dataFromBackground("initializeTaskTime", { 'task' : newTask });
+						}else{
+							console.error("Cant start time, because newTask arent validated!");
+						}
 					}
 				}
 

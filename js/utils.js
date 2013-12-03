@@ -5,16 +5,22 @@ function TimeTrackerObject(data){
 	//change task by taskurl
 	this.changeTask = function(taskUrl, taskNumber){
 		if(taskUrl){
-			this.taskUrl = taskUrl;
-			this.taskName = "No-named";
+			//verify the task url
+			var urlNumber = getNumberFromRedmineUrlTimeTracker(taskUrl);
+			if(urlNumber){
+				//is an url valid
+				this.taskUrl = taskUrl;
+			}
+			//change task number
 			if(taskNumber){
 				this.taskNumber = taskNumber;
 			}else{
-				var number = getNumberFromTaskUrlTimeTracker(taskUrl);
+				var number = getNumberFromTaskTimeTracker(taskUrl);
 				if(number){
 					this.taskNumber = number;
 				}
 			}
+			this.taskName = "No-named";
 		}
 	}
 	//validate the object
@@ -22,7 +28,8 @@ function TimeTrackerObject(data){
 		if(this.taskUrl && this.taskNumber){
 			return true;
 		}else{
-			alert("Ocurred an unexpected error in TimeObject!");
+			console.error("Ocurred an unexpected error in TimeObject!");
+			//alert("Ocurred an unexpected error in TimeObject!");
 			return false;
 		}
 	}
@@ -53,6 +60,7 @@ function TimeTrackerObject(data){
 //ENUMS
 var EnumTimeTrackerMessages = {
 	RESET: "Are you sure that wish to RESET the time?",
+	RESET_ALL: "Are you sure that wish to RESET ALL the task times?",
 	CLOCK: "00:00:00"
 }
 var EnumTimeTrackerState = {
@@ -85,7 +93,27 @@ function secondsToHmsTimeTracker(t) {
 	return h+':'+m+':'+s;
 }
 //task number from url
-function getNumberFromTaskUrlTimeTracker(url){
+function getNumberFromTaskTimeTracker(url){
+	var number = getNumberFromRedmineUrlTimeTracker(url);
+	if(number){
+		return number;
+	}else{
+		//if hasnt a pattern with number of task
+		var issueid = $("#time_entry_issue_id").val();
+		if(issueid){
+			return issueid;
+		}else{
+			if(url){
+				var taskid = prompt("Please enter the issue number: \nTask url: "+url);				
+				if(taskid){
+					return taskid;
+				}
+			}
+			return null;
+		}
+	}
+}
+function getNumberFromRedmineUrlTimeTracker(url){
 	var regex = new RegExp("issues\/([0-9]*)\/?");
 	if(regex.test(url)){
 		return regex.exec(url)[1];

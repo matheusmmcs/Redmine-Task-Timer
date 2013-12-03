@@ -57,6 +57,14 @@
 			renderConfiguration();
 		});
 
+		$(document).on("click", ".bt-time-tracker-clear-all-times", function(e){
+			e.preventDefault();
+			var resp = confirm(EnumTimeTrackerMessages.RESET_ALL);
+			if(resp==true){
+				dataFromBackground("clearAllTaskTimes", null);
+			}
+		});
+
 		//back to initial view
 		$(document).on("click", ".bt-back-init", function(e){
 			e.preventDefault();

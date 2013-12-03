@@ -4,11 +4,15 @@
 <hr/>
 <div>
 	<dl class="width50">
+		<dt>Clear All Times: </dt>
+		<dd><a href="#" class="bt bt-red width-100p bt-time-tracker-clear-all-times">Clear All Times</a></dd>
+	</dl>
+	<dl class="width50">
 		<dt>Show Notification: </dt>
 		<dd><input type="checkbox" name="showNotification" id="showNotification" {{#isShowNotification}}checked="checked"{{/isShowNotification}} /></dd>
 	</dl>
 	<dl class="width50">
-		<dt>Auto-close Time (ms): </dt>
+		<dt>Auto-Close Notif. (ms): </dt>
 		<dd><input type="text" name="timeNotification" id="timeNotification" value="{{timeToCloseNotifications}}"/></dd>
 	</dl>
 </div>

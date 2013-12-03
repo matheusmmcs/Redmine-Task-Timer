@@ -18,10 +18,10 @@ var EnumButtons = {
 			chrome.notifications.onButtonClicked.addListener(function(notificationId, buttonIndex){
 				//as all notifications have the same id, just use button index
 				if(buttonIndex == 0){
-					alert("CALL");
+					//alert("CALL");
 				}
 				if(buttonIndex == 1){
-					alert("EMAIL");
+					//alert("EMAIL");
 				}
 			})
 		}
@@ -59,7 +59,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 		case "initializeTaskTime":
 			var task = request.data['task'];
 			console.log("initializeTaskTime", task);
-			if(task){
+			if(task && task[idTask] != null && task[idTask] != undefined){
 				var taskLoaded = loadTaskTime(task[idTask]);
 				//garantee of no previous task has stored
 				if(!taskLoaded){
@@ -130,11 +130,15 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			console.log(newConfigs)
 			CONFIGS = newConfigs;
 			break;
+		case "clearAllTaskTimes":
+			localStorage.clear();
+			showNotification("Task Erase", "All task times has been erased!", EnumButtons.CLEAN);			
+			break;
 	}
 });
 
 //START/STOP/CONTINUE LOGIC
-var timerFunction = setInterval(function(){
+var timerFunction = setInterval(function(){	
 	for(var id in localStorage){
 		var task = loadTaskTime(id);
 		task.atualizeClock();		
