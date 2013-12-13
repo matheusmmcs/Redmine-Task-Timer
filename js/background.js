@@ -42,10 +42,10 @@ chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
 	    	if(tab && tab.id == tabId){
 	    		//verify if the page has redmine name to insert plugin
 	    		if(CONFIGS.verifyRedmineUrl && tab.url.toLowerCase().indexOf("redmine") != -1){
-	    			chrome.tabs.executeScript(tabId, {file: "js/jquery.js"});
+	    			chrome.tabs.executeScript(tabId, {file: "js/jquery.calendario.redmine.js"});
 	    			chrome.tabs.executeScript(tabId, {file: "js/utils.js"});
 					chrome.tabs.executeScript(tabId, {file: "js/counter.js"});
-					chrome.tabs.insertCSS(tabId, {file: "css/time-tracker.css"});
+					chrome.tabs.insertCSS(tabId, {file: "css/time-tracker.css"});					
 	    		}
 	    	}
 	    }
