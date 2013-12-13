@@ -156,6 +156,9 @@
 					
 					if ( day <= monthLength && ( i > 0 || j >= p ) ) {
 
+						if(day < 10){
+							day = "0"+day;
+						}
 						inner += '<span class="fc-date">' + day + '</span><span class="fc-weekday">' + this.options.weekabbrs[ j + this.options.startIn > 6 ? j + this.options.startIn - 6 - 1 : j + this.options.startIn ] + '</span>';
 
 						// this day is:

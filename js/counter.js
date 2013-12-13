@@ -190,15 +190,14 @@ if(!window.hasPluginTimeTracker){
 							html += '<span id="custom-prev" class="custom-prev"></span>';
 							html += '<span id="custom-next" class="custom-next"></span>';
 							html += '</nav>';
-							html += '<h2 id="custom-month" class="custom-month"></h2>';
+							html += '<h2 class="custom-month"><span id="custom-month-name"></span><span id="custom-month" class="fc-display-none"></span></h2>';
 							html += '<h3 id="custom-year" class="custom-year"></h3>';
 							html += '</div>';
 							html += '<div id="'+idElemCalendar+'" class="fc-calendar-container"></div>';
 							html += '</div>';
 							html += '</div>';
 							$(html).insertBefore($inputDates);
-							$inputDates.css('width', 400)
-							//$inputDates.hide();
+							$inputDates.css('width', 300);
 
 							var $wrapper = $('#custom-inner'),
 							$calendar = $('#'+idElemCalendar),
@@ -213,14 +212,15 @@ if(!window.hasPluginTimeTracker){
 										delete arraySelected[dateName];
 									}else{
 										$el.addClass("fc-selected");
-										arraySelected[dateName] = dateProperties;
+										arraySelected[dateName] = true;
 									}
 									//update input dates
 									var newDatesValue = "";
 									for(var idx in arraySelected){
-										newDatesValue += idx + ", ";
+										newDatesValue += idx + ",";
 									}
 									if(newDatesValue.length > 0){
+										newDatesValue = newDatesValue.replace(/^\s+|\s+$/g, '');
 										newDatesValue = newDatesValue.substring(0, newDatesValue.length - 1);
 									}
 									$inputDates.val(newDatesValue);
@@ -234,8 +234,9 @@ if(!window.hasPluginTimeTracker){
 								caldata : {},
 								displayWeekAbbr : true
 							} ),
-							$month = $( '#custom-month' ).html( cal.getMonthName() ),
-							$year = $( '#custom-year' ).html( cal.getYear() );
+							$monthname = $('#custom-month-name').html(cal.getMonthName()),
+							$month = $('#custom-month').html(cal.getMonth()),
+							$year = $('#custom-year').html(cal.getYear());
 
 							$('#custom-next').on('click', function() {
 								cal.gotoNextMonth(updateMonthYear);
@@ -245,23 +246,42 @@ if(!window.hasPluginTimeTracker){
 							});
 
 							function updateMonthYear() {
-								var monthname = cal.getMonthName();
+								var month = cal.getMonth();
 								var year = cal.getYear();
 								var $days = $(".fc-date");
-								$month.html(monthname);
+								$monthname.html(cal.getMonthName());
+								$month.html(month);
 								$year.html(year);
 
 								//re-render selected
 								$days.each(function(){
 									for(var data in arraySelected){
-										var obj = arraySelected[data];
-										var valueDay = $(this).html();
-										if(valueDay == obj.day && obj.monthname == monthname && obj.year == year){
-											$(this).parent().addClass("fc-selected");
+										var match = /^([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{4})$/i.exec(data);
+										if(match){
+											var mDay = match[1];
+											var mMonth = match[2];
+											var mYear = match[3];
+											var valueDay = $(this).html();//value of element
+											if(mDay == valueDay && mMonth == month && mYear == year){
+												$(this).parent().addClass("fc-selected");
+											}
 										}
 									}
 								});
 							}
+
+							function updateCalendarByText() {
+								var valueDates = $inputDates.html();
+								var indexes = valueDates.split(",");
+								for(var i in indexes){
+									if(indexes[i]){
+										arraySelected[indexes[i]] = true;
+									}
+								}
+								updateMonthYear();
+							}
+
+							updateCalendarByText();
 						}
 					}
 				}

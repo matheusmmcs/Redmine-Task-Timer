@@ -115,7 +115,7 @@
 	font-size: 15px;
     color: #333;
     font-weight: 300;
-    max-width: 400px;
+    max-width: 300px;
     height: 100%;
     box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 3px;
 }
@@ -315,7 +315,7 @@
 /* Modifications */
 
 .fc-calendar-container {
-	height: 300px;
+	height: 250px;
 	width: auto;
 	padding: 10px;
 	background: #f6f6f6;
@@ -407,4 +407,7 @@
 .fc-calendar .fc-row > div > div span {
 	display: none;
 	font-size: 22px;
+}
+.fc-display-none{
+	display: none;
 }

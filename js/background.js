@@ -139,11 +139,14 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 
 //START/STOP/CONTINUE LOGIC
 var timerFunction = setInterval(function(){	
+	var hasStarted = false;
 	for(var id in localStorage){
 		var task = loadTaskTime(id);
 		task.atualizeClock();		
 		saveTaskTime(task[idTask], task);
+		hasStarted = hasStarted || task.started;
 	}
+	setIcon(hasStarted);
 },1000);
 
 function saveTaskTime(id, task){
@@ -156,6 +159,18 @@ function loadTaskTime(id){
 	}else{
 		return null;
 	}
+}
+
+function setIcon(hasTimeRunning){
+	var path;
+	if(hasTimeRunning){
+		path = "images/icon16-running.png";
+	}else{
+		path = "images/icon16.png";
+	}
+	chrome.browserAction.setIcon({
+        path: path
+    });
 }
 
 //NOTIFICATION
