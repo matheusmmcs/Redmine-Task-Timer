@@ -9,16 +9,16 @@
 		//show remove view of task
 		$(document).on("click", ".time-tracker-popup-task-info", function(e){
 			e.preventDefault();
-			var $this = $(this);
-			var dataid = $this.attr("data-id");
+			var $this = $(this),
+				dataid = $this.attr("data-id");
 			renderInfoTaskTime(dataid);
 		});
 
 		$(document).on("click", ".bt-time-tracker-save", function(e){
 			e.preventDefault();
 			dataFromBackground("getConfiguration", null, function(config){
-				var showNotification = $("#showNotification").is(':checked');
-				var timeNotification = $("#timeNotification").val();
+				var showNotification = $("#showNotification").is(':checked'),
+					timeNotification = $("#timeNotification").val();
 				config.isShowNotification = showNotification;
 				if(timeNotification){
 					config.timeToCloseNotifications = timeNotification;
@@ -28,16 +28,44 @@
 			renderListTaskTimes();
 		});
 
-		//
+		
+		$(document).on("click", ".bt-time-tracker-clear-all-times", function(e){
+			e.preventDefault();
+			var resp = confirm(EnumTimeTrackerMessages.RESET_ALL);
+			if(resp==true){
+				dataFromBackground("clearAllTaskTimes", null);
+			}
+		});
 		$(document).on("click", ".time-tracker-popup-erase-time", function(e){
 			e.preventDefault();
-			var resp = confirm(EnumTimeTrackerMessages.RESET);
-			if(resp==true){
-				var dataid = $(this).attr("data-id");
+			var $this = $(this),
+				$delArea = $this.closest('.time-tracker-erase-area'),
+				vel = 300;
+			$delArea.fadeOut(function(){
+				$delArea.html('<a class="bt bt-gray pull-right time-tracker-erase-time-no">Cancel</a><a class="bt bt-red pull-right time-tracker-erase-time-yes">Clear</a>');
+				$delArea.fadeIn(vel);
+			});
+		});
+		$(document).on("click", ".time-tracker-erase-time-yes", function(e){
+			e.preventDefault();
+			var $eraseArea = $(this).closest('.time-tracker-erase-area');
+			if($eraseArea){
+				var dataid = $eraseArea.attr("data-id");
 				dataFromBackground("eraseTaskTime", { taskNumber : dataid });
 				renderListTaskTimes();
 			}
 		});
+		$(document).on("click", ".time-tracker-erase-time-no", function(e){
+			e.preventDefault();
+			var $eraseArea = $(this).closest('.time-tracker-erase-area');
+			if($eraseArea){
+				var dataid = $eraseArea.attr("data-id");
+				if(dataid){
+					renderInfoTaskTime(dataid);
+				}
+			}
+		});
+
 
 		$(document).on("click", ".time-tracker-popup-start-stop", function(e){
 			e.preventDefault();
@@ -57,13 +85,6 @@
 			renderConfiguration();
 		});
 
-		$(document).on("click", ".bt-time-tracker-clear-all-times", function(e){
-			e.preventDefault();
-			var resp = confirm(EnumTimeTrackerMessages.RESET_ALL);
-			if(resp==true){
-				dataFromBackground("clearAllTaskTimes", null);
-			}
-		});
 
 		//back to initial view
 		$(document).on("click", ".bt-back-init", function(e){
