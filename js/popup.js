@@ -85,11 +85,56 @@
 			renderConfiguration();
 		});
 
+		//info-task
+		$(document).on("click", ".time-tracker-popup-edit-time", function(e){
+			e.preventDefault();
+			var $eraseArea = $(this).closest('.time-tracker-erase-area');
+			if($eraseArea){
+				var dataid = $eraseArea.attr("data-id");
+				if(dataid){
+					renderEditTaskTime(dataid);
+				}
+			}
+		});
+		$(document).on("click", ".bt-time-tracker-edit", function(e){
+			e.preventDefault();
+			var dataid = $(this).attr("data-id");
+			if(dataid){
+				//recieve data from view
+				var retorno = {};
+				var name = $('#taskName').val();
+				var time = $('#timeFormatted').val();
+				var alwaysVisible = $('#alwaysVisible').is(':checked');
+				time = formattedToSecondsTimeTracker(time);
+
+				retorno['taskNumber'] = dataid;
+				retorno['alwaysVisible'] = alwaysVisible;
+				if(name){
+					retorno['name'] = name;
+				}
+				if(time){
+					retorno['time'] = time;
+				}
+
+				
+				dataFromBackground("changeTaskTime", retorno, function(){});
+
+				renderInfoTaskTime(dataid);
+			}
+		});
+
 
 		//back to initial view
 		$(document).on("click", ".bt-back-init", function(e){
 			e.preventDefault();
 			renderListTaskTimes();
+		});
+		$(document).on("click", ".bt-back-to-task", function(e){
+			e.preventDefault();
+			var dataid = $(this).attr("data-id");
+			if(dataid){
+				renderInfoTaskTime(dataid);
+			}
 		});
 
 		//INITIALIZE
@@ -178,10 +223,19 @@
 					dataFromBackground("getTaskTime", { taskNumber : dataid, notification : false }, function(newObj){
 						task = newObj.task;
 						task.started = task.started ? 'Yes' : 'No';
+						task.alwaysVisible = task.alwaysVisible ? 'Yes' : 'No';
 						task.timeFormatted = secondsToHmsTimeTracker(task.time);
 						renderMustache('../templates/mustache/info.mustache', task, $("#task-info"));
 					});
 				},500);
+			});
+		}
+		function renderEditTaskTime(dataid){
+			dataFromBackground("getTaskTime", { taskNumber : dataid, notification : false }, function(obj){
+				var task = obj.task;
+				task.timeFormatted = secondsToHmsTimeTracker(task.time);
+				console.log(task)
+				renderMustache('../templates/mustache/edit-task.mustache', task);
 			});
 		}
 		function renderConfiguration(){

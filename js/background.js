@@ -31,6 +31,9 @@ var EnumButtons = {
 	INITIALIZE: null
 }
 
+//store all changes in objects
+var mapChangeElements = {};
+
 //when atualize tabs
 chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
 	chrome.tabs.query({
@@ -134,6 +137,9 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			localStorage.clear();
 			showNotification("Task Erase", "All task times has been erased!", EnumButtons.CLEAN);			
 			break;
+		case "changeTaskTime":
+			
+			break;
 	}
 });
 
@@ -142,6 +148,15 @@ var timerFunction = setInterval(function(){
 	var hasStarted = false;
 	for(var id in localStorage){
 		var task = loadTaskTime(id);
+		//as the update time occurs every second, there is a map containing the elements and their changes
+		if(task && task.taskNumber){
+			var changes = mapChangeElements[task.taskNumber];
+			if(changes){
+				task.change(changes);
+				delete mapChangeElements[task.taskNumber];
+			}
+		}
+
 		task.atualizeClock();		
 		saveTaskTime(task[idTask], task);
 		hasStarted = hasStarted || task.started;

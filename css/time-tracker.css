@@ -11,6 +11,8 @@
 #time-tracker-popup a{text-decoration:none;color:#357ebd;}#time-tracker-popup a:visited{color:#357ebd;}
 #time-tracker-popup dl{display:block;font-size:11pt;margin:3px 0;padding:6px 8px 6px;background:#f9f9f9;border-bottom:1px solid #e1e1e1;}#time-tracker-popup dl dt{display:inline-block;margin:0;padding:0;width:20%;text-align:left;font-weight:bold;color:#428bca;}
 #time-tracker-popup dl dd{display:inline-block;margin:0;padding:0;width:70%;font-weight:bold;color:#555555;}
+#time-tracker-popup dl.width40 dt{width:40%;}
+#time-tracker-popup dl.width40 dd{width:58%;}
 #time-tracker-popup dl.width50 dt{width:50%;}
 #time-tracker-popup dl.width50 dd{width:48%;}
 #time-tracker-popup .list{list-style:none;margin:0;padding:5px 5px 10px;font-weight:normal;font-size:11pt;line-height:2;}#time-tracker-popup .list li{display:list-item;width:100%;margin:5px 0;padding:5px;list-style-type:none;text-align:justify;font-weight:bold;background:#3498db;border:0;border-radius:5px;border:1px solid #357ebd;overflow:auto;zoom:1;}#time-tracker-popup .list li a{color:white;}#time-tracker-popup .list li a:hover{color:#ebebeb;}

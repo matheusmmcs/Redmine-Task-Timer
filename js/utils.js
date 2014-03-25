@@ -44,12 +44,25 @@ function TimeTrackerObject(data){
 			this.dateBackground = newDate;
 		}
 	}
+	this.change = function(changesObj){
+		if(changesObj['time']){
+			this.time = changesObj['time'];
+		}
+		if(changesObj['taskName']){
+			this.taskName = changesObj['taskName'];
+		}
+		if(changesObj['alwaysVisible']){
+			this.alwaysVisible = changesObj['alwaysVisible'];
+		}
+	}
 
 
 	/*		INITIALIZE OBJECT 		*/
 	if(data){
 		this.changeTask(data.taskUrl, data.taskNumber);
 	}
+	//optionals, to define the user preference
+	this.alwaysVisible = data && data.alwaysVisible != undefined ? data.alwaysVisible : false;
 	//can be ommited in initialize
 	this.started = data && data.started != undefined ? data.started : true;
 	this.time = data && data.time != undefined ? data.time : 0;
@@ -91,6 +104,14 @@ function secondsToHmsTimeTracker(t) {
     m = m < 10 ? "0"+m : m;
     s = s < 10 ? "0"+s : s;
 	return h+':'+m+':'+s;
+}
+function formattedToSecondsTimeTracker(t) {
+	if(!t){
+		t = '00:00:00';
+	}
+	var arrayTime = t.split(":");
+	t = arrayTime[2] + (arrayTime[1] * 60) + (arrayTime[0] * 360);
+	return t;
 }
 //task number from url
 function getNumberFromTaskTimeTracker(url){

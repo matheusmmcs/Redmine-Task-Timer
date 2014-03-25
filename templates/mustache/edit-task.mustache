@@ -1,0 +1,22 @@
+<h1>
+	Edit Task - {{taskNumber}}
+</h1>
+<hr/>
+<div>
+	<dl class="width40">
+		<dt>Name: </dt>
+		<dd><input type="text" name="taskName" id="taskName" value="{{taskName}}"/></dd>
+	</dl>
+	<dl class="width40">
+		<dt>Time: </dt>
+		<dd><input type="text" name="timeFormatted" id="timeFormatted" value="{{timeFormatted}}"/></dd>
+	</dl>
+	<dl class="width40">
+		<dt>Always Visible: </dt>
+		<dd><input type="checkbox" name="alwaysVisible" id="alwaysVisible" {{#alwaysVisible}}checked="checked"{{/alwaysVisible}} /></dd>
+	</dl>
+</div>
+<div class="actions">
+	<a data-id="{{taskNumber}}" href="#" class="bt bt-blue bt-time-tracker-edit">Save</a>
+	<a data-id="{{taskNumber}}" class="bt bt-reset bt-back-to-task">Back</a>
+</div>

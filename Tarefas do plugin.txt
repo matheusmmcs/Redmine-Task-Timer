@@ -1,0 +1,4 @@
+
+remover campos obrigatórios ao salvar o tempo, permitindo limpar os dados de tempo do usuário;
+botao para permitir alterar o tempo trabalhado (desativar o plugin);
+botao para mostrar ou nao a tarefa na lista do popup;
