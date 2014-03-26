@@ -1,6 +1,6 @@
 ﻿{
   "name": "Redmine Time Tracker",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Plugin to track your work time (works with chrome closed) and manage it.",
   "content_scripts": [
     {

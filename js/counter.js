@@ -204,8 +204,9 @@ if(!window.hasPluginTimeTracker){
 							arraySelected = {},
 							cal = $calendar.calendarioRedmine( {
 								onDayClick : function( $el, $contentEl, dateProperties ) {
-
-									var dateName = dateProperties.day+"/"+dateProperties.month+"/"+dateProperties.year;
+									var m = dateProperties.month;
+									dateProperties.month = m < 10 ? '0' + m : m;
+									var dateName = dateProperties.day+"/"+ dateProperties.month +"/"+dateProperties.year;
 									//change date
 									if($el.hasClass("fc-selected")){
 										$el.removeClass("fc-selected");
