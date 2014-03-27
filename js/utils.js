@@ -20,8 +20,10 @@ function TimeTrackerObject(data){
 					this.taskNumber = number;
 				}
 			}
-			this.taskName = "No-named";
 		}
+	}
+	this.hasName = function(){
+		return this.taskName == "Task" ? false : true;
 	}
 	//validate the object
 	this.validate = function(){
@@ -51,18 +53,25 @@ function TimeTrackerObject(data){
 		if(changesObj['taskName']){
 			this.taskName = changesObj['taskName'];
 		}
-		if(changesObj['alwaysVisible']){
+		if(changesObj['alwaysVisible'] != undefined){
 			this.alwaysVisible = changesObj['alwaysVisible'];
 		}
 	}
-
+	this.resetTime = function(){
+		this.started = false;
+		this.time = 0;
+		this.dateBackground = undefined;
+	}
 
 	/*		INITIALIZE OBJECT 		*/
 	if(data){
 		this.changeTask(data.taskUrl, data.taskNumber);
 	}
+
 	//optionals, to define the user preference
 	this.alwaysVisible = data && data.alwaysVisible != undefined ? data.alwaysVisible : false;
+	this.taskName = data && data.taskName != undefined ? data.taskName : "Task";
+
 	//can be ommited in initialize
 	this.started = data && data.started != undefined ? data.started : true;
 	this.time = data && data.time != undefined ? data.time : 0;
@@ -110,7 +119,7 @@ function formattedToSecondsTimeTracker(t) {
 		t = '00:00:00';
 	}
 	var arrayTime = t.split(":");
-	t = arrayTime[2] + (arrayTime[1] * 60) + (arrayTime[0] * 360);
+	t = parseInt(arrayTime[2]) + (parseInt(arrayTime[1]) * 60) + (parseInt(arrayTime[0]) * 3600);
 	return t;
 }
 //task number from url

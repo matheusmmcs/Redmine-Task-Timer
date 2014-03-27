@@ -5,6 +5,11 @@
 			PLAY : 'play',
 			PAUSE : 'pause'
 		}
+		var interval = 500, renderInterval, taskNameSize = 18;
+
+		$(window).unload(function(){
+			clearInterval(renderInterval);
+		});
 
 		//show remove view of task
 		$(document).on("click", ".time-tracker-popup-task-info", function(e){
@@ -101,25 +106,32 @@
 			var dataid = $(this).attr("data-id");
 			if(dataid){
 				//recieve data from view
-				var retorno = {};
-				var name = $('#taskName').val();
-				var time = $('#timeFormatted').val();
-				var alwaysVisible = $('#alwaysVisible').is(':checked');
-				time = formattedToSecondsTimeTracker(time);
+				var retorno = {},
+					errors = false,
+					name = $('#taskName').val(),
+					time = $('#timeFormatted').val(),
+					alwaysVisible = $('#alwaysVisible').is(':checked');
 
 				retorno['taskNumber'] = dataid;
 				retorno['alwaysVisible'] = alwaysVisible;
 				if(name){
-					retorno['name'] = name;
+					retorno['taskName'] = name;
 				}
 				if(time){
-					retorno['time'] = time;
+					patt = /^[0-9]{2}:[0-9]{2}:[0-9]{2}$/g;
+					isformatted = patt.test(time);
+					if(isformatted){
+						retorno['time'] = formattedToSecondsTimeTracker(time);
+					}else{
+						errors = true;
+						alert("Time format is wrong!");
+					}					
 				}
 
-				
-				dataFromBackground("changeTaskTime", retorno, function(){});
-
-				renderInfoTaskTime(dataid);
+				if(!errors){
+					dataFromBackground("changeTaskTime", retorno, function(){});
+					renderInfoTaskTime(dataid);
+				}
 			}
 		});
 
@@ -183,6 +195,15 @@
 				for(var idx in localst){
 					var task = parseJSONTimeTracker(localst[idx]);
 					task.timeFormatted = secondsToHmsTimeTracker(task.time);
+					task.hasName = task.taskName ? true : false;
+					if(task.hasName){
+						if(task.taskName.length >= taskNameSize){
+							task.taskNameMin = task.taskName.substring(0,taskNameSize) + "... ";
+						}else{
+							task.taskNameMin = task.taskName;
+						}
+						task.taskName = "Task["+task.taskNumber+"]: " + task.taskName;
+					}
 					objectTemplate.tasks.push(task);
 				}
 				renderMustache('../templates/mustache/list-task.mustache', objectTemplate);
@@ -190,7 +211,7 @@
 				//update informations
 				clearInterval(renderInterval);
 				renderInterval = setInterval(function(){
-
+					
 					$("#task-list > li").each(function(){
 						var $this = $(this);
 						var dataid = $this.attr("data-id");
@@ -211,7 +232,7 @@
 						});
 					});
 
-				},500);
+				},interval);
 			});
 		}
 		function renderInfoTaskTime(dataid){
@@ -219,7 +240,9 @@
 				var task = obj.task;
 				renderMustache('../templates/mustache/info-task.mustache', task);
 
-				interval = setInterval(function(){
+				
+				clearInterval(renderInterval);
+				renderInterval = setInterval(function(){
 					dataFromBackground("getTaskTime", { taskNumber : dataid, notification : false }, function(newObj){
 						task = newObj.task;
 						task.started = task.started ? 'Yes' : 'No';
@@ -227,7 +250,7 @@
 						task.timeFormatted = secondsToHmsTimeTracker(task.time);
 						renderMustache('../templates/mustache/info.mustache', task, $("#task-info"));
 					});
-				},500);
+				},interval);
 			});
 		}
 		function renderEditTaskTime(dataid){

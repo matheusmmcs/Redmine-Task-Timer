@@ -75,10 +75,8 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			break;
 		case "getTaskTime":
 			var task = loadTaskTime(request.data[idTask]);
-			//console.log("getTaskTime", task);
 			//if hasnt task, whe need initialize a new task
 			if(task){
-				task = new TimeTrackerObject(task);
 				sendResponse({
 					initialized: true,
 					task: task
@@ -114,8 +112,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			//showNotification("Task Erase", "This task time has been erased!", EnumButtons.CLEAN);
 			break;
 		case "eraseTaskTime":
-			localStorage.removeItem(request.data[idTask]);
-			showNotification("Task Erase", "The task time ["+request.data[idTask]+"] has been erased!", EnumButtons.CLEAN);
+			eraseTaskTime(request.data[idTask]);
 			sendResponse(true);
 			break;
 		case "submitTaskTime":
@@ -134,32 +131,49 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			CONFIGS = newConfigs;
 			break;
 		case "clearAllTaskTimes":
-			localStorage.clear();
+			//localStorage.clear();
+			for(var id in localStorage){
+				eraseTaskTime(id);
+			}
 			showNotification("Task Erase", "All task times has been erased!", EnumButtons.CLEAN);			
 			break;
 		case "changeTaskTime":
-			
+			var taskchange = request.data,
+				id = taskchange[idTask];
+			mapChangeElements[id] = taskchange;
 			break;
 	}
 });
 
 //START/STOP/CONTINUE LOGIC
+function eraseTaskTime(id){
+	var task = loadTaskTime(id);
+	if(task.alwaysVisible){
+		task.resetTime();
+		saveTaskTime(id, task);
+	}else{
+		localStorage.removeItem(id);
+		showNotification("Task Erase", "The task time ["+id+"] has been erased!", EnumButtons.CLEAN);
+	}
+}
+
 var timerFunction = setInterval(function(){	
 	var hasStarted = false;
 	for(var id in localStorage){
 		var task = loadTaskTime(id);
 		//as the update time occurs every second, there is a map containing the elements and their changes
 		if(task && task.taskNumber){
-			var changes = mapChangeElements[task.taskNumber];
+			var changes = mapChangeElements[id];
 			if(changes){
 				task.change(changes);
-				delete mapChangeElements[task.taskNumber];
+				saveTaskTime(id, task);
+				delete mapChangeElements[id];
+			}else{
+				task.atualizeClock();
+				saveTaskTime(id, task);
 			}
+			hasStarted = hasStarted || task.started;
 		}
-
-		task.atualizeClock();		
-		saveTaskTime(task[idTask], task);
-		hasStarted = hasStarted || task.started;
 	}
 	setIcon(hasStarted);
 },1000);
@@ -170,10 +184,11 @@ function saveTaskTime(id, task){
 function loadTaskTime(id){
 	var task = localStorage.getItem(id);
 	if(task){
-		return new TimeTrackerObject(parseJSONTimeTracker(task));
+		task = new TimeTrackerObject(parseJSONTimeTracker(task));
 	}else{
-		return null;
+		task = null;
 	}
+	return task;
 }
 
 function setIcon(hasTimeRunning){
