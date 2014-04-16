@@ -21,7 +21,9 @@
 #time-tracker-popup .color-blue{color:#3498db;}#time-tracker-popup .color-blue:hover{color:#357ebd;}
 #time-tracker-popup .actions{margin:0 auto;padding:5px 5px 10px;text-align:center;}#time-tracker-popup .actions .bt{width:40%;margin-left:5%;}#time-tracker-popup .actions .bt:first-child{margin-left:0;}
 #time-tracker-popup .time-tracker-icon-time{font-size:10pt;margin:0 5px;}
-#time-tracker-popup .time-tracker-icon-lock{color:#0069BF;font-size:10pt;margin:0 3px;}
+#time-tracker-popup .time-tracker-icon-lock{color:#0069BF;font-size:11pt;margin:0 3px;}#time-tracker-popup .time-tracker-icon-lock.glyphicon-star{color:#0E4C80;}
+#time-tracker-popup .time-tracker-icon-lock.glyphicon-star-empty{color:#0E4C80;}
+#time-tracker-popup .time-tracker-list-time{padding-right:5px;}
 #time-tracker-popup .hide{display:none;}
 #time-tracker-popup .pull-right{float:right;}
 #time-tracker-popup .clearfix{overflow:auto;zoom:1;}
