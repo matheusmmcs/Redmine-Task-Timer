@@ -7,7 +7,7 @@
 	{{#tasks}}	
 	<li data-id="{{taskNumber}}" data-src="{{taskUrl}}">
 		{{#alwaysVisible}}<i class="time-tracker-icon-lock glyphicon glyphicon-lock"></i>{{/alwaysVisible}}
-		<a href="{{taskUrl}}" title="{{taskName}}" target="_blank">{{#hasName}}{{taskNameMin}}:{{/hasName}} {{taskNumber}}</a>
+		<a href="{{taskUrl}}" title="{{taskName}}" target="_blank">{{taskNumber}}{{#hasName}}: {{taskNameMin}}{{/hasName}}</a>
 		<span class="color-white opacity-50">/<i class="time-tracker-icon-time glyphicon glyphicon-time"></i><b class="task-time">{{timeFormatted}}</b></span>
 		<a data-id="{{taskNumber}}" class="bt bt-gray color-blue pull-right time-tracker-popup-task-info"><span class="glyphicon glyphicon-info-sign"></span></a>
 		{{#started}}
