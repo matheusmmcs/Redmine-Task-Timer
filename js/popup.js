@@ -71,6 +71,15 @@
 			}
 		});
 
+		$(document).on("click", ".time-tracker-icon-lock", function(e){
+			e.preventDefault();
+			var $this = $(this);
+			var dataid = $this.closest("li").attr("data-id");
+			var toLock = $this.find("i").attr("data-locked") == "true" ? false : true;
+
+			dataFromBackground("changeTaskLock", { 'taskNumber' : dataid, 'toLock' : toLock});
+			renderListTaskTimes();
+		});
 
 		$(document).on("click", ".time-tracker-popup-start-stop", function(e){
 			e.preventDefault();
@@ -164,7 +173,7 @@
 		function changeRender(html){			
 			var $content = $("#time-tracker-cnt");
 			var $loader = $("#loader");
-			var vel = 300;
+			var vel = 200;
 			$content.fadeOut(function(){
 				$content.html(html);
 				$content.fadeIn(vel);

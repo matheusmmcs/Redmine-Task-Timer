@@ -6,8 +6,16 @@
 	<hr/>
 	{{#tasks}}	
 	<li data-id="{{taskNumber}}" data-src="{{taskUrl}}">
-		<i class="time-tracker-icon-lock glyphicon {{#alwaysVisible}}glyphicon-lock{{/alwaysVisible}}{{^alwaysVisible}}glyphicon-unchecked{{/alwaysVisible}}"></i>
-		<a href="{{taskUrl}}" title="{{taskName}}" target="_blank">{{taskNumber}}{{#hasName}}: {{taskNameMin}}{{/hasName}}</a>
+		<a class="time-tracker-icon-lock" href="#">
+			{{#alwaysVisible}}
+				<i data-locked="true" class="glyphicon glyphicon-lock"></i>
+			{{/alwaysVisible}}
+			{{^alwaysVisible}}
+				<i data-locked="false" class="glyphicon glyphicon-unchecked"></i>
+			{{/alwaysVisible}}
+		</a>
+		<a class="time-tracker-list-name" href="{{taskUrl}}" title="{{taskName}}" target="_blank">{{taskNumber}}{{#hasName}}: {{taskNameMin}}{{/hasName}}</a>
+		
 		<a data-id="{{taskNumber}}" class="bt bt-gray color-blue pull-right time-tracker-popup-task-info"><span class="glyphicon glyphicon-info-sign"></span></a>
 		{{#started}}
 			<a data-id="{{taskNumber}}" data-started="true" class="bt bt-stop pull-right time-tracker-popup-start-stop"><span class="glyphicon glyphicon-pause"></span></a>

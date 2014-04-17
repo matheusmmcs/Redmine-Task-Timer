@@ -11,7 +11,7 @@
 @colorGreenMedium:		#2ecc71;
 @colorGreenDark:		darken(#2ecc71, 5%);
 
-@minWidth:				420px;
+@minWidth:				450px;
 
 #time-tracker-cnt{
 	display: block;
@@ -199,6 +199,13 @@
 			.bt-reset{
 				#time-tracker-popup > .color-blue;
 			}
+			.time-tracker-list-name{
+				overflow: hidden;
+				width: @minWidth - 230px;
+				height: 22px;
+				line-height: 35px;
+				display: inline-block;
+			}
 		}
 	}
 	.color-blue{
@@ -224,14 +231,13 @@
 		margin: 0 5px;
 	}
 	.time-tracker-icon-lock{
-		color: #0069BF;
-		font-size: 11pt;
-		margin: 0 3px;
-		&.glyphicon-star{
-			color: #0E4C80;
-		}
-		&.glyphicon-star-empty{
-			color: #0E4C80;
+		i{
+			color: #0069BF;
+			font-size: 11pt;
+			margin: 0 3px;
+			&:hover{
+				color: #0E4C80;
+			}
 		}
 	}
 	.time-tracker-list-time{

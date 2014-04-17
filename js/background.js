@@ -142,6 +142,14 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 				id = taskchange[idTask];
 			mapChangeElements[id] = taskchange;
 			break;
+		case "changeTaskLock":
+			var id = request.data[idTask], toLock = request.data["toLock"];
+			var task = loadTaskTime(id);
+			if(task){
+				task.alwaysVisible = toLock;
+				saveTaskTime(id, task);
+			}
+			break;
 	}
 });
 
