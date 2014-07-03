@@ -133,7 +133,7 @@
 						retorno['time'] = formattedToSecondsTimeTracker(time);
 					}else{
 						errors = true;
-						alert("Time format is wrong!");
+						alert("Time format is wrong, please fill with HH:MM:SS pattern.");
 					}					
 				}
 
