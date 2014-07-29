@@ -119,10 +119,14 @@
 					errors = false,
 					name = $('#taskName').val(),
 					time = $('#timeFormatted').val(),
+					userId = $('#userId').val(),
 					alwaysVisible = $('#alwaysVisible').is(':checked');
 
 				retorno['taskNumber'] = dataid;
 				retorno['alwaysVisible'] = alwaysVisible;
+				if(userId){
+					retorno['userId'] = userId;
+				}
 				if(name){
 					retorno['taskName'] = name;
 				}

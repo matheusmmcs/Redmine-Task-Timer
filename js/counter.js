@@ -9,8 +9,13 @@ if(!window.hasPluginTimeTracker){
 
 				//get element where set the time hours
 				var $timeInput = $("#time_entry_hours");
+				var $contentH2 = $("#content h2").eq(0);
+
+				var loc = window.location.href;
+
 				//if has an input to time, modify the page
-				if($timeInput.length){
+				if($timeInput.length && loc.indexOf("time_entries") == -1){
+
 					//hide fields if has a sub issues
 					var $issueTree = $("#issue_tree");
 					var hasIssueTreeForm = $issueTree.find(".list.issues").length > 0 ? true : false;
@@ -19,6 +24,16 @@ if(!window.hasPluginTimeTracker){
 						$(".icon.icon-time-add").remove();
 						$timeInput.closest("fieldset").remove();
 					}
+
+					//hide time-add button
+					var $timeAddButton = $(".icon.icon-time-add");
+					if($timeAddButton.length){
+						$timeAddButton.remove();
+					}
+
+					//hide fieldset to actualize time
+					$timeInput.closest("fieldset").hide();
+
 					//id and button to start and stop
 					var idStartStop = "time-tracker-btn", $stopStart;
 					//id and element clock
@@ -33,12 +48,17 @@ if(!window.hasPluginTimeTracker){
 					//var like a static object when time is defined
 					var timeObject;
 					//task number of this url
-					var numberTask = getNumberFromTaskTimeTracker(window.location.href);
+					var numberTask = getNumberFromTaskTimeTracker(loc);
 
 					//has time-tracker? case no, insert a html to start/stop timer, and show the time
 					if(!$("#time-tracker-cnt").length){
 						//this html is so simple and insert mustache to render they in all pages aren't a good idea
-						$timeInput.parent().append('<div id="time-tracker-cnt"><div id="'+idClock+'" class="clk">'+EnumTimeTrackerMessages.CLOCK+'</div><a id="'+idStartStop+'" class="'+EnumTimeTrackerState.START_CLASS+'">'+EnumTimeTrackerState.START+'</a><a id="'+idReset+'" class="'+EnumTimeTrackerState.RESET_CLASS+'">'+EnumTimeTrackerState.RESET+'</a></div>');
+						var floatClass = '';//'time-tracker-right';
+						var spanText = '';//'<span>Working time: </span>';
+
+						var html = '<div id="time-tracker-cnt"><div class="'+floatClass+'">'+spanText+'<div id="'+idClock+'" class="clk">'+EnumTimeTrackerMessages.CLOCK+'</div><a id="'+idStartStop+'" class="'+EnumTimeTrackerState.START_CLASS+'">'+EnumTimeTrackerState.START+'</a><a id="'+idReset+'" class="'+EnumTimeTrackerState.RESET_CLASS+'">'+EnumTimeTrackerState.RESET+'</a></div></div>';
+						//$contentH2.append(html);
+						$issueTree.before('<div class="working-time"><p><strong>Tempo de Trabalho</strong></p>'+html+'</div><hr/>');
 					}
 					//atualize variables DOM reference
 					$stopStart = $("#"+idStartStop);
@@ -106,15 +126,20 @@ if(!window.hasPluginTimeTracker){
 					}
 
 					//method to initialize the time when the button is clicked
-					function startTime(){				
+					function startTime(){
+						//loggedas
+						var $userData = $("#loggedas .user");
+						var id = $userData.attr("href").replace("/users/","");
+
 						setButtonStarted();
 						console.log(hasTimeSaved, $stopStart)
 						if(hasTimeSaved){
-							dataFromBackground("startTaskTime", { 'taskNumber' : numberTask });
+							dataFromBackground("startTaskTime", { 'taskNumber' : numberTask, 'id' : id });
 						}else{
+
 							var newTask = new TimeTrackerObject({ taskUrl : window.location.href });
 							if(newTask.validate()){
-								dataFromBackground("initializeTaskTime", { 'task' : newTask });
+								dataFromBackground("initializeTaskTime", { 'task' : newTask, 'id' : id });
 							}else{
 								console.error("Cant start time, because newTask arent validated!");
 							}
@@ -133,7 +158,7 @@ if(!window.hasPluginTimeTracker){
 							if(resp==true){
 								stopTime();
 								$clock.html(EnumTimeTrackerMessages.CLOCK);
-								$timeInput.val("");
+								//$timeInput.val("");
 								dataFromBackground("eraseTaskTime", { 'taskNumber' : numberTask });
 							}
 						}
@@ -141,12 +166,11 @@ if(!window.hasPluginTimeTracker){
 
 					function atualizeClock(task){
 						var s = task == null ? 0 : task.time;
-
 						if(s == 0){
-							$timeInput.val("");
+							//$timeInput.val("");
 						}else{
 							var hoursFormatted = (s/3600);//.toFixed(4);
-							$timeInput.val(hoursFormatted);
+							//$timeInput.val(hoursFormatted);
 						}
 						//atualize clock
 						if($clock){

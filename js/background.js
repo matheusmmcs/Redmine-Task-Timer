@@ -7,6 +7,7 @@ var CONFIGS = {
 }
 
 var idTask = 'taskNumber';
+var paramUserId = 'id';
 
 var EnumButtons = {
 	PROGRESS: {
@@ -61,13 +62,18 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 	switch(request.redmine){
 		case "initializeTaskTime":
 			var task = request.data['task'];
+			var userId = request.data[paramUserId];
+
 			console.log("initializeTaskTime", task);
 			if(task && task[idTask] != null && task[idTask] != undefined){
 				var taskLoaded = loadTaskTime(task[idTask]);
+
 				//garantee of no previous task has stored
 				if(!taskLoaded){
 					//garantee when initialized, its is started
 					task.started = true;
+					task.userId = userId;
+
 					saveTaskTime(task[idTask], task);
 					showNotification("Task initialized", "The task ["+task[idTask]+"] has been initialized!", EnumButtons.INITIALIZE);
 				}
@@ -92,16 +98,20 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			break;
 		case "startTaskTime":
 			var id = request.data[idTask];
+			var userId = request.data[paramUserId];
+
 			var task = loadTaskTime(id);
-			console.log("startTaskTime", task);
+			console.log("startTaskTime", userId, task);
 			if(task){
 				task.started = true;
+				task.userId = userId;
 				saveTaskTime(id, task);
 			}
 			//showNotification("Task Erase", "This task time has been erased!", EnumButtons.CLEAN);
 			break;
 		case "stopTaskTime":
 			var id = request.data[idTask];
+
 			var task = loadTaskTime(id);
 			console.log("stopTaskTime", task);
 			if(task){
@@ -154,6 +164,10 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 });
 
 //START/STOP/CONTINUE LOGIC
+function startTask(){
+
+}
+
 function eraseTaskTime(id){
 	var task = loadTaskTime(id);
 	if(task.alwaysVisible){
