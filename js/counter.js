@@ -40,6 +40,8 @@ if(!window.hasPluginTimeTracker){
 					var idClock = "time-tracker-clk", $clock;
 					//id and button to reset
 					var idReset = "time-tracker-rst", $reset;
+					//id and button to fisinh
+					var idFinish = "time-tracker-finish", $finish;
 					//id and button to submit
 					var idSubmit = "issue-form";
 
@@ -56,7 +58,7 @@ if(!window.hasPluginTimeTracker){
 						var floatClass = '';//'time-tracker-right';
 						var spanText = '';//'<span>Working time: </span>';
 
-						var html = '<div id="time-tracker-cnt"><div class="'+floatClass+'">'+spanText+'<div id="'+idClock+'" class="clk">'+EnumTimeTrackerMessages.CLOCK+'</div><a id="'+idStartStop+'" class="'+EnumTimeTrackerState.START_CLASS+'">'+EnumTimeTrackerState.START+'</a><a id="'+idReset+'" class="'+EnumTimeTrackerState.RESET_CLASS+'">'+EnumTimeTrackerState.RESET+'</a></div></div>';
+						var html = '<div id="time-tracker-cnt"><div class="'+floatClass+'">'+spanText+'<div id="'+idClock+'" class="clk">'+EnumTimeTrackerMessages.CLOCK+'</div><a id="'+idStartStop+'" class="'+EnumTimeTrackerState.START_CLASS+'">'+EnumTimeTrackerState.START+'</a><a id="'+idFinish+'" class="'+EnumTimeTrackerState.FINISH_CLASS+' bt-green">'+EnumTimeTrackerState.FINISH+'</a><a id="'+idReset+'" class="'+EnumTimeTrackerState.RESET_CLASS+'">'+EnumTimeTrackerState.RESET+'</a></div></div>';
 						//$contentH2.append(html);
 						$issueTree.before('<div class="working-time"><p><strong>Tempo de Trabalho</strong></p>'+html+'</div><hr/>');
 					}
@@ -64,6 +66,7 @@ if(!window.hasPluginTimeTracker){
 					$stopStart = $("#"+idStartStop);
 					$clock = $('#'+idClock);
 					$reset = $('#'+idReset);
+					$finish = $('#'+idFinish);
 
 					//when initialize
 					timerFunction = setInterval(function(){
@@ -103,6 +106,11 @@ if(!window.hasPluginTimeTracker){
 					$(document).on("click", "#"+idReset, function(e){
 						e.preventDefault();
 						resetTime();
+					});
+
+					$(document).on("click", "#"+idFinish, function(e){
+						e.preventDefault();
+						dataFromBackground("submitTaskTime", { 'taskNumber' : numberTask });
 					});
 
 					$(document).on("submit", "#"+idSubmit, function(e){

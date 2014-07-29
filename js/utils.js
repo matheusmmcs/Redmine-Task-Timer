@@ -93,11 +93,13 @@ var EnumTimeTrackerMessages = {
 }
 var EnumTimeTrackerState = {
 	START:"Start",
+	FINISH:"Finish",
 	STOP:"Stop",
 	RESET:"Reset",
 	START_CLASS:"bt bt-start",
 	STOP_CLASS:"bt bt-stop",
-	RESET_CLASS:"bt bt-reset"
+	RESET_CLASS:"bt bt-reset",
+	FINISH_CLASS:"bt bt-finish",
 }
 
 //HELPER FUNCTIONS

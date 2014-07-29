@@ -38,7 +38,8 @@ var EnumButtons = {
 	CLEAN: null,
 	INITIALIZE: null,
 	STOP: null,
-	ERROR: null
+	ERROR: null,
+	FINISH: null
 }
 
 //store all changes in objects
@@ -148,8 +149,16 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			sendResponse(true);
 			break;
 		case "submitTaskTime":
-			localStorage.removeItem(request.data[idTask]);
-			showNotification("Submit Task Time", "The task time ["+request.data[idTask]+"] has been submitted!", EnumButtons.SUBMIT);
+			var id = request.data[idTask];
+			var task = loadTaskTime(id);
+			console.log("submitTaskTime", task);
+
+			if(task){
+				ajaxUsingAPI(task, APIENUM.finish, function(){
+					showNotification("Task finished", "The task ["+id+"] has been finished!", EnumButtons.FINISH);
+					//localStorage.removeItem(id);
+				});
+			}
 			break;
 		case "listTaskTimes":
 			sendResponse(localStorage);
