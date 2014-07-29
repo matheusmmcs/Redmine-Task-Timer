@@ -156,7 +156,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			if(task){
 				ajaxUsingAPI(task, APIENUM.finish, function(){
 					showNotification("Task finished", "The task ["+id+"] has been finished!", EnumButtons.FINISH);
-					//localStorage.removeItem(id);
+					localStorage.removeItem(id);
 				});
 			}
 			break;
@@ -210,16 +210,17 @@ function ajaxUsingAPI(task, operation, callback){
 	 	dataType: "json",
 	 	cache: false,
 	 	success: function(data){
+	 		console.log(data)
 	 		if(data.success){
 	 			if (callback && typeof(callback) === "function") {
 				    callback();
 				}
 	 		}else{
-	 			showNotification("Connection Error", "The task "+task.taskNumber+" can't be "+operation+".", EnumButtons.ERROR);	
+	 			showNotification("Connection Error #1", "The task "+task.taskNumber+" can't be "+operation+".", EnumButtons.ERROR);	
 	 		}
 	 	},
 	 	error: function(data){
-	 		showNotification("Connection Error", "The task "+task.taskNumber+" can't be "+operation+".", EnumButtons.ERROR);
+	 		showNotification("Connection Error #2", "The task "+task.taskNumber+" can't be "+operation+".", EnumButtons.ERROR);
 	 		console.error(data);
 	 	}
 	});
