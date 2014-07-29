@@ -3,7 +3,14 @@
 var CONFIGS = {
 	verifyRedmineUrl: true,
 	isShowNotification: true,
-	timeToCloseNotifications: 4000
+	timeToCloseNotifications: 4000,
+	domainAPI: 'http://utils.infoway-pi.com.br/utils'
+}
+
+var APIENUM = {
+	init : "init", 
+	pause : "pause", 
+	finish : "finish"
 }
 
 var idTask = 'taskNumber';
@@ -29,7 +36,9 @@ var EnumButtons = {
 	},
 	SUBMIT: null,
 	CLEAN: null,
-	INITIALIZE: null
+	INITIALIZE: null,
+	STOP: null,
+	ERROR: null
 }
 
 //store all changes in objects
@@ -75,7 +84,10 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 					task.userId = userId;
 
 					saveTaskTime(task[idTask], task);
-					showNotification("Task initialized", "The task ["+task[idTask]+"] has been initialized!", EnumButtons.INITIALIZE);
+
+					ajaxUsingAPI(task, APIENUM.init, function(){
+						showNotification("Task initialized", "The task ["+task[idTask]+"] has been initialized!", EnumButtons.INITIALIZE);
+					});
 				}
 			}
 			break;
@@ -105,9 +117,15 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			if(task){
 				task.started = true;
 				task.userId = userId;
+
 				saveTaskTime(id, task);
+
+				ajaxUsingAPI(task, APIENUM.init, function(){
+					showNotification("Task started", "The task ["+id+"] has been started!", EnumButtons.INITIALIZE);
+				});
+
+				
 			}
-			//showNotification("Task Erase", "This task time has been erased!", EnumButtons.CLEAN);
 			break;
 		case "stopTaskTime":
 			var id = request.data[idTask];
@@ -117,9 +135,13 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			if(task){
 				task.started = false;
 				task.dateBackground = undefined;
-				saveTaskTime(id, task);				
+
+				saveTaskTime(id, task);
+
+				ajaxUsingAPI(task, APIENUM.pause, function(){
+					showNotification("Task stopped", "The task ["+id+"] has been stopped!", EnumButtons.STOP);
+				});
 			}
-			//showNotification("Task Erase", "This task time has been erased!", EnumButtons.CLEAN);
 			break;
 		case "eraseTaskTime":
 			eraseTaskTime(request.data[idTask]);
@@ -164,9 +186,37 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 });
 
 //START/STOP/CONTINUE LOGIC
-function startTask(){
-
+function ajaxUsingAPI(task, operation, callback){
+	var domain = CONFIGS.domainAPI;
+	console.log("AJAX", operation, task)
+	$.ajax({
+	  	url: domain + "/updateIssue",
+	  	type: "GET",
+	  	data: { 
+	  		idUser : task.userId, 
+	  		idIssue : task.taskNumber, 
+	  		time : (task.time / 3600), 
+	  		operation : operation
+	  	},
+	 	dataType: "json",
+	 	cache: false,
+	 	success: function(data){
+	 		if(data.success){
+	 			if (callback && typeof(callback) === "function") {
+				    callback();
+				}
+	 		}else{
+	 			showNotification("Connection Error", "The task "+task.taskNumber+" can't be "+operation+".", EnumButtons.ERROR);	
+	 		}
+	 	},
+	 	error: function(data){
+	 		showNotification("Connection Error", "The task "+task.taskNumber+" can't be "+operation+".", EnumButtons.ERROR);
+	 		console.error(data);
+	 	}
+	});
 }
+
+
 
 function eraseTaskTime(id){
 	var task = loadTaskTime(id);

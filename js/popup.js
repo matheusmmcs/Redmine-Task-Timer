@@ -23,10 +23,14 @@
 			e.preventDefault();
 			dataFromBackground("getConfiguration", null, function(config){
 				var showNotification = $("#showNotification").is(':checked'),
-					timeNotification = $("#timeNotification").val();
+					timeNotification = $("#timeNotification").val(),
+					domainAPI = $("#domainAPI").val();
 				config.isShowNotification = showNotification;
 				if(timeNotification){
 					config.timeToCloseNotifications = timeNotification;
+				}
+				if(domainAPI){
+					config.domainAPI = domainAPI;
 				}
 				dataFromBackground("setConfiguration", { configs : config });
 			});
