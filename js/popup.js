@@ -12,7 +12,7 @@
 		});
 
 		//show remove view of task
-		$(document).on("click", ".time-tracker-popup-task-info", function(e){
+		$(document).on("click", ".time-tracker-list-name", function(e){
 			e.preventDefault();
 			var $this = $(this),
 				dataid = $this.attr("data-id");
@@ -96,6 +96,14 @@
 			}else{
 				dataFromBackground("stopTaskTime", { 'taskNumber' : dataid });
 			}
+		});
+
+		$(document).on("click", ".time-tracker-popup-finish", function(e){
+			e.preventDefault();
+			var $this = $(this);
+			var dataid = $this.attr("data-id");
+
+			dataFromBackground("submitTaskTime", { 'taskNumber' : numberTask });
 		});
 
 		$(document).on("click", ".time-tracker-popup-config", function(e){
