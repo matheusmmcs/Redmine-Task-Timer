@@ -24,7 +24,8 @@
 			dataFromBackground("getConfiguration", null, function(config){
 				var showNotification = $("#showNotification").is(':checked'),
 					timeNotification = $("#timeNotification").val(),
-					domainAPI = $("#domainAPI").val();
+					domainAPI = $("#domainAPI").val(),
+					username = $("#username").val();
 				config.isShowNotification = showNotification;
 				if(timeNotification){
 					config.timeToCloseNotifications = timeNotification;
@@ -32,6 +33,10 @@
 				if(domainAPI){
 					config.domainAPI = domainAPI;
 				}
+				if(username){
+					config.username = username;
+				}
+				console.log(config)
 				dataFromBackground("setConfiguration", { configs : config });
 			});
 			renderListTaskTimes();

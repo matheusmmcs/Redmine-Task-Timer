@@ -135,19 +135,18 @@ if(!window.hasPluginTimeTracker){
 
 					//method to initialize the time when the button is clicked
 					function startTime(){
-						//loggedas
-						var $userData = $("#loggedas .user");
-						var id = $userData.attr("href").replace("/users/","");
+						//var $userData = $("#loggedas .user");
+						//var id = $userData.attr("href").replace("/users/","");
 
 						setButtonStarted();
 						console.log(hasTimeSaved, $stopStart)
 						if(hasTimeSaved){
-							dataFromBackground("startTaskTime", { 'taskNumber' : numberTask, 'id' : id });
+							dataFromBackground("startTaskTime", { 'taskNumber' : numberTask });
 						}else{
 
 							var newTask = new TimeTrackerObject({ taskUrl : window.location.href });
 							if(newTask.validate()){
-								dataFromBackground("initializeTaskTime", { 'task' : newTask, 'id' : id });
+								dataFromBackground("initializeTaskTime", { 'task' : newTask });
 							}else{
 								console.error("Cant start time, because newTask arent validated!");
 							}

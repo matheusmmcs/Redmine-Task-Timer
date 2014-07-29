@@ -4,13 +4,20 @@ var CONFIGS = {
 	verifyRedmineUrl: true,
 	isShowNotification: true,
 	timeToCloseNotifications: 4000,
-	domainAPI: 'http://utils.infoway-pi.com.br/utils'
+	domainAPI: 'http://utils.infoway-pi.com.br/utils',
+	userId: null,
+	username: null
 }
 
 var APIENUM = {
 	init : "init", 
 	pause : "pause", 
 	finish : "finish"
+}
+
+var APIURLENUM = {
+	updateIssue : "/updateIssue",
+	getUserID : "/getUserID",
 }
 
 var idTask = 'taskNumber';
@@ -72,7 +79,6 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 	switch(request.redmine){
 		case "initializeTaskTime":
 			var task = request.data['task'];
-			var userId = request.data[paramUserId];
 
 			console.log("initializeTaskTime", task);
 			if(task && task[idTask] != null && task[idTask] != undefined){
@@ -82,11 +88,10 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 				if(!taskLoaded){
 					//garantee when initialized, its is started
 					task.started = true;
-					task.userId = userId;
 
 					saveTaskTime(task[idTask], task);
 
-					ajaxUsingAPI(task, APIENUM.init, function(){
+					ajaxUsingAPI(task, APIENUM.init, APIURLENUM.updateIssue, function(){
 						showNotification("Task initialized", "The task ["+task[idTask]+"] has been initialized!", EnumButtons.INITIALIZE);
 					});
 				}
@@ -111,17 +116,13 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			break;
 		case "startTaskTime":
 			var id = request.data[idTask];
-			var userId = request.data[paramUserId];
-
 			var task = loadTaskTime(id);
-			console.log("startTaskTime", userId, task);
 			if(task){
 				task.started = true;
-				task.userId = userId;
 
 				saveTaskTime(id, task);
 
-				ajaxUsingAPI(task, APIENUM.init, function(){
+				ajaxUsingAPI(task, APIENUM.init, APIURLENUM.updateIssue, function(){
 					showNotification("Task started", "The task ["+id+"] has been started!", EnumButtons.INITIALIZE);
 				});
 
@@ -139,7 +140,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 
 				saveTaskTime(id, task);
 
-				ajaxUsingAPI(task, APIENUM.pause, function(){
+				ajaxUsingAPI(task, APIENUM.pause, APIURLENUM.updateIssue, function(){
 					showNotification("Task stopped", "The task ["+id+"] has been stopped!", EnumButtons.STOP);
 				});
 			}
@@ -154,7 +155,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			console.log("submitTaskTime", task);
 
 			if(task){
-				ajaxUsingAPI(task, APIENUM.finish, function(){
+				ajaxUsingAPI(task, APIENUM.finish, APIURLENUM.updateIssue, function(){
 					showNotification("Task finished", "The task ["+id+"] has been finished!", EnumButtons.FINISH);
 					localStorage.removeItem(id);
 				});
@@ -168,8 +169,25 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			break;
 		case "setConfiguration":
 			var newConfigs = request.data["configs"];
-			console.log(newConfigs)
-			CONFIGS = newConfigs;
+
+			if(!newConfigs.username){
+				showNotification("Caution! #4", "Please, fill your username in plugin configuration.", EnumButtons.ERROR);
+			}else{
+				ajaxUsingAPI({login: newConfigs.username}, null, APIURLENUM.getUserID, function(data){					
+					if(data.success){
+						newConfigs.userId = data.userID;
+
+						validateConfig(newConfigs);
+
+						CONFIGS = newConfigs;
+
+						showNotification("configuration", "Configuration successfully changed.", EnumButtons.ERROR);
+					}else{
+						showNotification("Caution! #1", "Please, verify your username in plugin configuration.", EnumButtons.ERROR);
+					}
+				});
+			}
+
 			break;
 		case "clearAllTaskTimes":
 			//localStorage.clear();
@@ -195,32 +213,53 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 });
 
 //START/STOP/CONTINUE LOGIC
-function ajaxUsingAPI(task, operation, callback){
-	var domain = CONFIGS.domainAPI;
-	console.log("AJAX", operation, task)
-	$.ajax({
-	  	url: domain + "/updateIssue",
-	  	type: "GET",
-	  	data: { 
-	  		idUser : task.userId, 
-	  		idIssue : task.taskNumber, 
-	  		time : (task.time / 3600), 
+function ajaxUsingAPI(obj, operation, method, callback){
+
+	if(!CONFIGS.domainAPI){
+		showNotification("Caution! #3", "Please, fill the domain of redmine API in plugin configuration.", EnumButtons.ERROR);
+	}
+
+	var data;
+	if(method == APIURLENUM.updateIssue){
+		validateConfig(CONFIGS);
+		data = {
+	  		idUser : CONFIGS.userId, 
+	  		idIssue : obj.taskNumber, 
+	  		time : (obj.time / 3600), 
 	  		operation : operation
-	  	},
+	  	}
+	}else if(method == APIURLENUM.getUserID){
+		data = {
+			login : obj.login
+		}
+	}
+
+	$.ajax({
+	  	url: CONFIGS.domainAPI + method,
+	  	type: "GET",
+	  	data: data,
 	 	dataType: "json",
 	 	cache: false,
 	 	success: function(data){
 	 		console.log(data)
 	 		if(data.success){
 	 			if (callback && typeof(callback) === "function") {
-				    callback();
+				    callback.call(this, data);
 				}
 	 		}else{
-	 			showNotification("Connection Error #1", "The task "+task.taskNumber+" can't be "+operation+".", EnumButtons.ERROR);	
+	 			var msg = "";
+	 			if(method == APIURLENUM.updateIssue){
+	 				msg = "The task "+obj.taskNumber+" can't be "+operation+".";
+		 		}else if(method == APIURLENUM.getUserID){
+		 			msg = "Username not found.";
+		 		}else{
+		 			msg = "Connection Error.";
+		 		}
+		 		showNotification("Connection Error #1", msg, EnumButtons.ERROR);
 	 		}
 	 	},
-	 	error: function(data){
-	 		showNotification("Connection Error #2", "The task "+task.taskNumber+" can't be "+operation+".", EnumButtons.ERROR);
+	 	error: function(data){	 		
+	 		showNotification("Connection Error #2", "Connection Error.", EnumButtons.ERROR);
 	 		console.error(data);
 	 	}
 	});
@@ -363,22 +402,8 @@ function openPage(page) {
 
 //----------------------------------------------------------------------------------------------------------------------------------------------
 
-
-/*método genérico para realizar ajax*/
-function ajax(caminho, tipo, dados){
-	var retorno;
-	$.ajax({
-		url: caminho,
-		cache: false,
-		type: tipo,
-		async: false,
-		data: dados,
-		success: function(dados){
-			retorno = dados;
-		},
-		error: function(jqXHR, status, err){
-			console.log(jqXHR);
-		}
-	});
-	return retorno;
+function validateConfig(c){
+	if(!c.userId){
+		showNotification("Caution! #2", "Please, fill your username in plugin configuration.", EnumButtons.ERROR);
+	}
 }

@@ -47,9 +47,6 @@ function TimeTrackerObject(data){
 		}
 	}
 	this.change = function(changesObj){
-		if(changesObj['userId']){
-			this.userId = changesObj['userId'];
-		}
 		if(changesObj['time']){
 			this.time = changesObj['time'];
 		}
@@ -70,9 +67,6 @@ function TimeTrackerObject(data){
 	if(data){
 		this.changeTask(data.taskUrl, data.taskNumber);
 	}
-
-	//user information (not-null)
-	this.userId = data.userId;
 
 	//optionals, to define the user preference
 	this.alwaysVisible = data && data.alwaysVisible != undefined ? data.alwaysVisible : false;
