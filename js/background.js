@@ -3,10 +3,11 @@
 var CONFIGS = {
 	verifyRedmineUrl: true,
 	isShowNotification: true,
-	timeToCloseNotifications: 4000,
+	timeToCloseNotifications: 6000,
 	domainAPI: 'http://utils.infoway-pi.com.br/utils',
 	userId: null,
-	username: null
+	username: null,
+	waitingCallback: false
 }
 
 var APIENUM = {
@@ -89,10 +90,12 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 					//garantee when initialized, its is started
 					task.started = true;
 
-					saveTaskTime(task[idTask], task);
-
 					ajaxUsingAPI(task, APIENUM.init, APIURLENUM.updateIssue, function(){
+						saveTaskTime(task[idTask], task);
 						showNotification("Task initialized", "The task ["+task[idTask]+"] has been initialized!", EnumButtons.INITIALIZE);
+						sendResponse({
+							reload: true
+						});
 					});
 				}
 			}
@@ -103,6 +106,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			if(task){
 				sendResponse({
 					initialized: true,
+					configs: CONFIGS,
 					task: task
 				});
 				if(request.data['notification']){
@@ -110,7 +114,8 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 				}
 			}else{
 				sendResponse({
-					initialized: false
+					initialized: false,
+					configs: CONFIGS
 				});
 			}
 			break;
@@ -120,10 +125,12 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			if(task){
 				task.started = true;
 
-				saveTaskTime(id, task);
-
 				ajaxUsingAPI(task, APIENUM.init, APIURLENUM.updateIssue, function(){
+					saveTaskTime(id, task);
 					showNotification("Task started", "The task ["+id+"] has been started!", EnumButtons.INITIALIZE);
+					sendResponse({
+						reload: true
+					});
 				});
 
 				
@@ -138,10 +145,12 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 				task.started = false;
 				task.dateBackground = undefined;
 
-				saveTaskTime(id, task);
-
 				ajaxUsingAPI(task, APIENUM.pause, APIURLENUM.updateIssue, function(){
+					saveTaskTime(id, task);
 					showNotification("Task stopped", "The task ["+id+"] has been stopped!", EnumButtons.STOP);
+					sendResponse({
+						reload: true
+					});
 				});
 			}
 			break;
@@ -155,9 +164,12 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			console.log("submitTaskTime", task);
 
 			if(task){
-				ajaxUsingAPI(task, APIENUM.finish, APIURLENUM.updateIssue, function(){
+				ajaxUsingAPI(task, APIENUM.finish, APIURLENUM.updateIssue, function(){					
 					showNotification("Task finished", "The task ["+id+"] has been finished!", EnumButtons.FINISH);
 					localStorage.removeItem(id);
+					sendResponse({
+						reload: true
+					});
 				});
 			}
 			break;
@@ -176,11 +188,8 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 				ajaxUsingAPI({login: newConfigs.username}, null, APIURLENUM.getUserID, function(data){					
 					if(data.success){
 						newConfigs.userId = data.userID;
-
 						validateConfig(newConfigs);
-
 						CONFIGS = newConfigs;
-
 						showNotification("configuration", "Configuration successfully changed.", EnumButtons.ERROR);
 					}else{
 						showNotification("Caution! #1", "Please, verify your username in plugin configuration.", EnumButtons.ERROR);
@@ -221,17 +230,21 @@ function ajaxUsingAPI(obj, operation, method, callback){
 
 	var data;
 	if(method == APIURLENUM.updateIssue){
-		validateConfig(CONFIGS);
 		data = {
 	  		idUser : CONFIGS.userId, 
 	  		idIssue : obj.taskNumber, 
 	  		time : (obj.time / 3600), 
 	  		operation : operation
 	  	}
+
+	  	CONFIGS.waitingCallback = obj.taskNumber;
+
 	}else if(method == APIURLENUM.getUserID){
 		data = {
 			login : obj.login
 		}
+
+		CONFIGS.waitingCallback = true;
 	}
 
 	$.ajax({
@@ -241,24 +254,28 @@ function ajaxUsingAPI(obj, operation, method, callback){
 	 	dataType: "json",
 	 	cache: false,
 	 	success: function(data){
+	 		CONFIGS.waitingCallback = false;
+
 	 		console.log(data)
 	 		if(data.success){
 	 			if (callback && typeof(callback) === "function") {
 				    callback.call(this, data);
 				}
 	 		}else{
-	 			var msg = "";
 	 			if(method == APIURLENUM.updateIssue){
-	 				msg = "The task "+obj.taskNumber+" can't be "+operation+".";
+	 				if(validateConfig(CONFIGS)){
+	 					showNotification("Connection Error #1", "The task "+obj.taskNumber+" can't be "+operation+".", EnumButtons.ERROR);
+	 				}
 		 		}else if(method == APIURLENUM.getUserID){
-		 			msg = "Username not found.";
+		 			showNotification("Connection Error #1", "Username not found.", EnumButtons.ERROR);
 		 		}else{
-		 			msg = "Connection Error.";
+		 			showNotification("Connection Error #1", "Connection Error.", EnumButtons.ERROR);
 		 		}
-		 		showNotification("Connection Error #1", msg, EnumButtons.ERROR);
 	 		}
 	 	},
-	 	error: function(data){	 		
+	 	error: function(data){
+	 		CONFIGS.waitingCallback = false;
+
 	 		showNotification("Connection Error #2", "Connection Error.", EnumButtons.ERROR);
 	 		console.error(data);
 	 	}
@@ -283,7 +300,7 @@ var timerFunction = setInterval(function(){
 	for(var id in localStorage){
 		var task = loadTaskTime(id);
 		//as the update time occurs every second, there is a map containing the elements and their changes
-		if(task && task.taskNumber){
+		if(task && task.taskNumber && CONFIGS.waitingCallback != task.taskNumber){
 			var changes = mapChangeElements[id];
 			if(changes){
 				task.change(changes);
@@ -325,6 +342,7 @@ function setIcon(hasTimeRunning){
 }
 
 //NOTIFICATION
+var idNotification = 0;
 function showNotification(title, message, btns){
 	if(CONFIGS.isShowNotification){
 		title = title ? title : " ";
@@ -336,7 +354,7 @@ function showNotification(title, message, btns){
 				actions: function(){}
 			}
 		}
-		chrome.notifications.create("redmineTimeTracker", {   
+		chrome.notifications.create("redmineTimeTracker"+idNotification, {
 				type: 'basic', 
 				iconUrl: '../images/icon48.png',
 				title: title, 
@@ -345,6 +363,7 @@ function showNotification(title, message, btns){
 				buttons: btns.buttons
 			},
 			function(newId) {
+				idNotification=newId;
 				setTimeout(function(){
 					chrome.notifications.clear(newId, function(){});
 				}, CONFIGS.timeToCloseNotifications);
@@ -403,7 +422,10 @@ function openPage(page) {
 //----------------------------------------------------------------------------------------------------------------------------------------------
 
 function validateConfig(c){
-	if(!c.userId){
+	var ok = true;
+	if(c.userId == null || c.userId == undefined || c.userId == 0){
 		showNotification("Caution! #2", "Please, fill your username in plugin configuration.", EnumButtons.ERROR);
+		ok = false;
 	}
+	return ok;
 }

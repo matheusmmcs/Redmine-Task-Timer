@@ -3,6 +3,7 @@
 @colorBackgroundDark:	#EEE;
 @colorGray:				#aaa;
 @colorGrayDark:			#555;
+@colorGrayDarker:		darken(@colorGrayDark, 7%);
 
 @colorBlueClean: 		#3498db;
 @colorBlueMedium: 		#428bca;
@@ -12,6 +13,16 @@
 @colorGreenDark:		darken(@colorGreenMedium, 5%);
 
 @minWidth:				450px;
+
+#time-tracker-loading{
+	display: inline-block;
+	font-size: 14px;
+	line-height: 20px;
+	vertical-align: middle;
+}
+#time-tracker-btns{
+	display: inline-block;
+}
 
 #time-tracker-cnt{
 	display: block;
@@ -25,6 +36,9 @@
 		font-size: 13px;
 	}
 
+	.hide{
+		display: none !important;
+	}
 
 	.time-tracker-right{
 		float: right;
@@ -44,6 +58,17 @@
 
 		&:hover{
 			text-decoration: none;
+		}
+
+		&.bt-disable{
+  			color: #ffffff !important;
+  			background-color: @colorGrayDark !important;
+  			border-color: @colorGrayDarker !important;
+  			&:hover, &:focus, &:active, &.active{
+  				color: #ffffff !important;
+  				background-color: @colorGrayDarker !important;
+  				border-color: @colorGrayDarker !important;
+  			}
 		}
 
 		&.bt-green{
@@ -175,6 +200,19 @@
 		}
 	}
 
+	.time-tracker-loading{
+		display: inline-block;
+		font-size: 14px;
+		line-height: 25px;
+		color: white;
+		vertical-align: middle;
+		float: right;
+	}
+	.time-tracker-btns{
+		display: inline-block;
+		float: right;
+	}
+
 	.list{
 		list-style: none;
 		margin: 0;
@@ -222,6 +260,7 @@
 			}
 		}
 	}
+
 	.color-blue{
 		color: @colorBlueClean;
 		&:hover{

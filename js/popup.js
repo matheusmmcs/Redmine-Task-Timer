@@ -108,7 +108,9 @@
 			var $this = $(this);
 			var dataid = $this.attr("data-id");
 
-			dataFromBackground("submitTaskTime", { 'taskNumber' : numberTask });
+			dataFromBackground("submitTaskTime", { 'taskNumber' : dataid }, function(){
+				renderListTaskTimes();
+			});
 		});
 
 		$(document).on("click", ".time-tracker-popup-config", function(e){
@@ -217,6 +219,7 @@
 
 		/*	RENDER TEMPLATES 	*/
 		var renderInterval;
+		var waitingCallback = false;
 		function renderListTaskTimes(){
 			dataFromBackground("listTaskTimes", null, function(localst){
 				var objectTemplate = {
@@ -248,8 +251,19 @@
 						dataFromBackground("getTaskTime", { taskNumber : dataid }, function(obj){
 							//update time
 							$this.find(".task-time").html(secondsToHmsTimeTracker(obj.task.time));
-							//update button							
+							//update button
 							var $btnStartStop = $this.find(".time-tracker-popup-start-stop");
+
+							var wcb = obj.configs.waitingCallback;
+							if(wcb != null && wcb != undefined && wcb != 0){
+								$(".time-tracker-btns").addClass("hide");
+								$(".time-tracker-loading").removeClass("hide");
+							}else{
+								$(".time-tracker-btns").removeClass("hide");
+								$(".time-tracker-loading").addClass("hide");
+							}
+							
+
 							if(obj.task.started){
 								$btnStartStop.attr("class", "bt bt-stop pull-right time-tracker-popup-start-stop");
 								$btnStartStop.attr("data-started", "true");

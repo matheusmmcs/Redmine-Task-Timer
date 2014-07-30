@@ -1,3 +1,12 @@
+#time-tracker-loading {
+  display: inline-block;
+  font-size: 14px;
+  line-height: 20px;
+  vertical-align: middle;
+}
+#time-tracker-btns {
+  display: inline-block;
+}
 #time-tracker-cnt {
   display: block;
   width: 100%;
@@ -8,6 +17,9 @@
 }
 #time-tracker-cnt span {
   font-size: 13px;
+}
+#time-tracker-cnt .hide {
+  display: none !important;
 }
 #time-tracker-cnt .time-tracker-right {
   float: right;
@@ -44,6 +56,19 @@
 }
 #time-tracker-cnt .bt:hover {
   text-decoration: none;
+}
+#time-tracker-cnt .bt.bt-disable {
+  color: #ffffff !important;
+  background-color: #555555 !important;
+  border-color: #434343 !important;
+}
+#time-tracker-cnt .bt.bt-disable:hover,
+#time-tracker-cnt .bt.bt-disable:focus,
+#time-tracker-cnt .bt.bt-disable:active,
+#time-tracker-cnt .bt.bt-disable.active {
+  color: #ffffff !important;
+  background-color: #434343 !important;
+  border-color: #434343 !important;
 }
 #time-tracker-cnt .bt.bt-green {
   color: #ffffff;
@@ -190,6 +215,18 @@
 }
 #time-tracker-popup dl.width50 dd {
   width: 48%;
+}
+#time-tracker-popup .time-tracker-loading {
+  display: inline-block;
+  font-size: 14px;
+  line-height: 25px;
+  color: white;
+  vertical-align: middle;
+  float: right;
+}
+#time-tracker-popup .time-tracker-btns {
+  display: inline-block;
+  float: right;
 }
 #time-tracker-popup .list {
   list-style: none;

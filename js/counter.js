@@ -46,7 +46,7 @@ if(!window.hasPluginTimeTracker){
 					var idSubmit = "issue-form";
 
 					//var to store the function responsible for atualize clock
-					var hasTimeSaved = false;
+					var hasTimeSaved = false, waitingCallback = false;
 					//var like a static object when time is defined
 					var timeObject;
 					//task number of this url
@@ -58,7 +58,7 @@ if(!window.hasPluginTimeTracker){
 						var floatClass = '';//'time-tracker-right';
 						var spanText = '';//'<span>Working time: </span>';
 
-						var html = '<div id="time-tracker-cnt"><div class="'+floatClass+'">'+spanText+'<div id="'+idClock+'" class="clk">'+EnumTimeTrackerMessages.CLOCK+'</div><a id="'+idStartStop+'" class="'+EnumTimeTrackerState.START_CLASS+'">'+EnumTimeTrackerState.START+'</a><a id="'+idFinish+'" class="'+EnumTimeTrackerState.FINISH_CLASS+' bt-green">'+EnumTimeTrackerState.FINISH+'</a><a id="'+idReset+'" class="'+EnumTimeTrackerState.RESET_CLASS+'">'+EnumTimeTrackerState.RESET+'</a></div></div>';
+						var html = '<div id="time-tracker-cnt"><div class="'+floatClass+'">'+spanText+'<div id="'+idClock+'" class="clk">'+EnumTimeTrackerMessages.CLOCK+'</div><div id="time-tracker-btns"><a id="'+idStartStop+'" class="'+EnumTimeTrackerState.START_CLASS+'">'+EnumTimeTrackerState.START+'</a><a id="'+idFinish+'" class="'+EnumTimeTrackerState.FINISH_CLASS+' bt-green">'+EnumTimeTrackerState.FINISH+'</a><a id="'+idReset+'" class="'+EnumTimeTrackerState.RESET_CLASS+'">'+EnumTimeTrackerState.RESET+'</a></div><div id="time-tracker-loading" class="hide">Wait...</div></div></div>';
 						//$contentH2.append(html);
 						$issueTree.before('<div class="working-time"><p><strong>Tempo de Trabalho</strong></p>'+html+'</div><hr/>');
 					}
@@ -71,6 +71,7 @@ if(!window.hasPluginTimeTracker){
 					//when initialize
 					timerFunction = setInterval(function(){
 						dataFromBackground("getTaskTime", { 'taskNumber' : numberTask, 'notification' : false }, function(data){
+
 							if(data.initialized){
 								hasTimeSaved = true;
 								var task = new TimeTrackerObject(data.task);
@@ -86,6 +87,18 @@ if(!window.hasPluginTimeTracker){
 								setButtonStoped();
 								atualizeClock(null);
 							}
+
+							if(data.configs && data.configs.waitingCallback != waitingCallback){
+								waitingCallback = data.configs.waitingCallback;
+								if(data.configs.waitingCallback == numberTask){
+									$("#time-tracker-btns").addClass("hide");
+									$("#time-tracker-loading").removeClass("hide");
+								}else{
+									$("#time-tracker-btns").removeClass("hide");
+									$("#time-tracker-loading").addClass("hide");
+								}
+							}
+
 						});
 					}, 500);
 
@@ -110,7 +123,11 @@ if(!window.hasPluginTimeTracker){
 
 					$(document).on("click", "#"+idFinish, function(e){
 						e.preventDefault();
-						dataFromBackground("submitTaskTime", { 'taskNumber' : numberTask });
+						dataFromBackground("submitTaskTime", { 'taskNumber' : numberTask, 'location' : window.location }, function(data){
+							if(data && data.reload){
+								window.location.reload();
+							}
+						});
 					});
 
 					$(document).on("submit", "#"+idSubmit, function(e){
@@ -141,12 +158,20 @@ if(!window.hasPluginTimeTracker){
 						setButtonStarted();
 						console.log(hasTimeSaved, $stopStart)
 						if(hasTimeSaved){
-							dataFromBackground("startTaskTime", { 'taskNumber' : numberTask });
+							dataFromBackground("startTaskTime", { 'taskNumber' : numberTask, 'location' : window.location }, function(data){
+								if(data && data.reload){
+									window.location.reload();
+								}
+							});
 						}else{
 
 							var newTask = new TimeTrackerObject({ taskUrl : window.location.href });
 							if(newTask.validate()){
-								dataFromBackground("initializeTaskTime", { 'task' : newTask });
+								dataFromBackground("initializeTaskTime", { 'task' : newTask, 'location' : window.location }, function(data){
+									if(data && data.reload){
+										window.location.reload();
+									}
+								});
 							}else{
 								console.error("Cant start time, because newTask arent validated!");
 							}
@@ -156,7 +181,11 @@ if(!window.hasPluginTimeTracker){
 					//method to stop the time when the button is clicked
 					function stopTime(){
 						setButtonStoped();
-						dataFromBackground("stopTaskTime", { 'taskNumber' : numberTask });
+						dataFromBackground("stopTaskTime", { 'taskNumber' : numberTask, 'location' : window.location }, function(data){
+							if(data && data.reload){
+								window.location.reload();
+							}
+						});
 					}
 
 					function resetTime(){
