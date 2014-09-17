@@ -12,7 +12,7 @@
 @colorGreenMedium:		darken(@colorGreenClean, 5%);
 @colorGreenDark:		darken(@colorGreenMedium, 5%);
 
-@minWidth:				450px;
+@minWidth:				480px;
 
 #time-tracker-loading{
 	display: inline-block;
@@ -146,6 +146,10 @@
 		color: @colorBlueDark;
 		margin: 0;
 		padding: 10px 5px 0;
+
+		a.bt{
+			margin-top: -2px;
+		}
 	}
 	hr{
 		border-top: none;
@@ -248,7 +252,7 @@
 			.bt{
 				padding: 4px 10px;
 			}
-			.bt-reset{
+			.bt-reset, .bt-send-time{
 				#time-tracker-popup > .color-blue;
 			}
 			.time-tracker-list-name{

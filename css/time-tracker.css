@@ -157,7 +157,7 @@
 #time-tracker-popup {
   display: block;
   background: #ffffff;
-  min-width: 450px;
+  min-width: 480px;
 }
 #time-tracker-popup * {
   box-sizing: border-box;
@@ -167,6 +167,9 @@
   color: #357ebd;
   margin: 0;
   padding: 10px 5px 0;
+}
+#time-tracker-popup h1 a.bt {
+  margin-top: -2px;
 }
 #time-tracker-popup hr {
   border-top: none;
@@ -260,16 +263,18 @@
 #time-tracker-popup .list li .bt {
   padding: 4px 10px;
 }
-#time-tracker-popup .list li .bt-reset {
+#time-tracker-popup .list li .bt-reset,
+#time-tracker-popup .list li .bt-send-time {
   color: #3498db;
   color: #428bca !important;
 }
-#time-tracker-popup .list li .bt-reset:hover {
+#time-tracker-popup .list li .bt-reset:hover,
+#time-tracker-popup .list li .bt-send-time:hover {
   color: #357ebd;
 }
 #time-tracker-popup .list li .time-tracker-list-name {
   overflow: hidden;
-  width: 220px;
+  width: 250px;
   height: 22px;
   line-height: 35px;
   display: inline-block;

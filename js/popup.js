@@ -103,6 +103,16 @@
 			}
 		});
 
+		$(document).on("click", ".time-tracker-popup-send-time", function(e){
+			e.preventDefault();
+			var $this = $(this);
+			var dataid = $this.attr("data-id");
+
+			dataFromBackground("sendTimeTaskTime", { 'taskNumber' : dataid }, function(){
+				renderListTaskTimes();
+			});
+		});
+
 		$(document).on("click", ".time-tracker-popup-finish", function(e){
 			e.preventDefault();
 			var $this = $(this);

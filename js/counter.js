@@ -42,6 +42,9 @@ if(!window.hasPluginTimeTracker){
 					var idReset = "time-tracker-rst", $reset;
 					//id and button to fisinh
 					var idFinish = "time-tracker-finish", $finish;
+					//id and button to fisinh
+					var idSendTime = "time-tracker-send-time", $sendTime;
+					
 					//id and button to submit
 					var idSubmit = "issue-form";
 
@@ -58,7 +61,7 @@ if(!window.hasPluginTimeTracker){
 						var floatClass = '';//'time-tracker-right';
 						var spanText = '';//'<span>Working time: </span>';
 
-						var html = '<div id="time-tracker-cnt"><div class="'+floatClass+'">'+spanText+'<div id="'+idClock+'" class="clk">'+EnumTimeTrackerMessages.CLOCK+'</div><div id="time-tracker-btns"><a id="'+idStartStop+'" class="'+EnumTimeTrackerState.START_CLASS+'">'+EnumTimeTrackerState.START+'</a><a id="'+idFinish+'" class="'+EnumTimeTrackerState.FINISH_CLASS+' bt-green">'+EnumTimeTrackerState.FINISH+'</a><a id="'+idReset+'" class="'+EnumTimeTrackerState.RESET_CLASS+'">'+EnumTimeTrackerState.RESET+'</a></div><div id="time-tracker-loading" class="hide">Wait...</div></div></div>';
+						var html = '<div id="time-tracker-cnt"><div class="'+floatClass+'">'+spanText+'<div id="'+idClock+'" class="clk">'+EnumTimeTrackerMessages.CLOCK+'</div><div id="time-tracker-btns"><a id="'+idStartStop+'" class="'+EnumTimeTrackerState.START_CLASS+'">'+EnumTimeTrackerState.START+'</a><a id="'+idSendTime+'" class="'+EnumTimeTrackerState.SEND_TIME_CLASS+' bt-gray">'+EnumTimeTrackerState.SEND_TIME+'</a><a id="'+idFinish+'" class="'+EnumTimeTrackerState.FINISH_CLASS+' bt-green">'+EnumTimeTrackerState.FINISH+'</a><a id="'+idReset+'" class="'+EnumTimeTrackerState.RESET_CLASS+'">'+EnumTimeTrackerState.RESET+'</a></div><div id="time-tracker-loading" class="hide">Wait...</div></div></div>';
 						//$contentH2.append(html);
 						$issueTree.before('<div class="working-time"><p><strong>Tempo de Trabalho</strong></p>'+html+'</div><hr/>');
 					}
@@ -67,6 +70,7 @@ if(!window.hasPluginTimeTracker){
 					$clock = $('#'+idClock);
 					$reset = $('#'+idReset);
 					$finish = $('#'+idFinish);
+					$sendTime = $('#'+idSendTime);
 
 					//when initialize
 					timerFunction = setInterval(function(){
@@ -118,12 +122,24 @@ if(!window.hasPluginTimeTracker){
 
 					$(document).on("click", "#"+idReset, function(e){
 						e.preventDefault();
-						resetTime();
+						var r = confirm("Do you really want reset your time in your plugin?");
+						if (r == true) {
+						    dataFromBackground("resetTimeTaskTime", { 'taskNumber' : numberTask, 'location' : window.location });
+						}
 					});
 
 					$(document).on("click", "#"+idFinish, function(e){
 						e.preventDefault();
 						dataFromBackground("submitTaskTime", { 'taskNumber' : numberTask, 'location' : window.location }, function(data){
+							if(data && data.reload){
+								window.location.reload();
+							}
+						});
+					});
+
+					$(document).on("click", "#"+idSendTime, function(e){
+						e.preventDefault();
+						dataFromBackground("sendTimeTaskTime", { 'taskNumber' : numberTask, 'location' : window.location }, function(data){
 							if(data && data.reload){
 								window.location.reload();
 							}
@@ -186,18 +202,6 @@ if(!window.hasPluginTimeTracker){
 								window.location.reload();
 							}
 						});
-					}
-
-					function resetTime(){
-						if($clock && $stopStart){
-							var resp = confirm(EnumTimeTrackerMessages.RESET);
-							if(resp==true){
-								stopTime();
-								$clock.html(EnumTimeTrackerMessages.CLOCK);
-								//$timeInput.val("");
-								dataFromBackground("eraseTaskTime", { 'taskNumber' : numberTask });
-							}
-						}
 					}
 
 					function atualizeClock(task){

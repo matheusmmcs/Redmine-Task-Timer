@@ -1,7 +1,7 @@
 ﻿{
-  "name": "Redmine Time Tracker",
-  "version": "0.2.5",
-  "description": "Plugin to track your work time (works with chrome closed) and manage it.",
+  "name": "Redmine Time Tracker - Infoway",
+  "version": "1.1.0",
+  "description": "Plugin to track your work time (works with chrome closed) and manage it. By Infoway.",
   "content_scripts": [
     {
       "matches": ["*://*/*"],

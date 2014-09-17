@@ -1,5 +1,6 @@
 
 //GLOBAL VARS (defined in options.html)
+var CONFIGS_ID = "CONFIGS";
 var CONFIGS = {
 	verifyRedmineUrl: true,
 	isShowNotification: true,
@@ -13,7 +14,8 @@ var CONFIGS = {
 var APIENUM = {
 	init : "init", 
 	pause : "pause", 
-	finish : "finish"
+	finish : "finish",
+	sendTime : "sendTime"
 }
 
 var APIURLENUM = {
@@ -47,11 +49,26 @@ var EnumButtons = {
 	INITIALIZE: null,
 	STOP: null,
 	ERROR: null,
-	FINISH: null
+	FINISH: null,
+	SEND_TIME: null
 }
 
 //store all changes in objects
 var mapChangeElements = {};
+
+
+//######### INITIALIZE PLUGIN ##########
+initilizePlugin();
+
+//function initialized when the plugin start
+function initilizePlugin(){
+	var cfg = loadConfigTimeTracker();
+	if(cfg != null){
+		CONFIGS = cfg;
+	}else{
+		saveConfigTimeTracker();
+	}
+}
 
 //when atualize tabs
 chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
@@ -158,6 +175,22 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			eraseTaskTime(request.data[idTask]);
 			sendResponse(true);
 			break;
+		case "sendTimeTaskTime":
+			var id = request.data[idTask];
+			var task = loadTaskTime(id);
+			console.log("sendTimeTaskTime", task);
+
+			if(task){
+				ajaxUsingAPI(task, APIENUM.sendTime, APIURLENUM.updateIssue, function(){					
+					showNotification("Time saved finished", "The time of task ["+id+"] has been saved!", EnumButtons.SEND_TIME);
+					task.resetTime();
+					saveTaskTime(id, task);
+					sendResponse({
+						reload: true
+					});
+				});
+			}
+			break;
 		case "submitTaskTime":
 			var id = request.data[idTask];
 			var task = loadTaskTime(id);
@@ -174,7 +207,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			}
 			break;
 		case "listTaskTimes":
-			sendResponse(localStorage);
+			sendResponse(getLocalStorageTasks());
 			break;
 		case "getConfiguration":
 			sendResponse(CONFIGS);
@@ -190,6 +223,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 						newConfigs.userId = data.userID;
 						validateConfig(newConfigs);
 						CONFIGS = newConfigs;
+						saveConfigTimeTracker();
 						showNotification("configuration", "Configuration successfully changed.", EnumButtons.ERROR);
 					}else{
 						showNotification("Caution! #1", "Please, verify your username in plugin configuration.", EnumButtons.ERROR);
@@ -200,7 +234,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			break;
 		case "clearAllTaskTimes":
 			//localStorage.clear();
-			for(var id in localStorage){
+			for(var id in getLocalStorageTasks()){
 				eraseTaskTime(id);
 			}
 			showNotification("Task Erase", "All task times has been erased!", EnumButtons.CLEAN);			
@@ -209,6 +243,14 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			var taskchange = request.data,
 				id = taskchange[idTask];
 			mapChangeElements[id] = taskchange;
+			break;
+		case "resetTimeTaskTime":
+			var id = request.data[idTask];
+			var task = loadTaskTime(id);
+			if(task){
+				task.resetTime();
+				saveTaskTime(id, task);
+			}
 			break;
 		case "changeTaskLock":
 			var id = request.data[idTask], toLock = request.data["toLock"];
@@ -286,18 +328,20 @@ function ajaxUsingAPI(obj, operation, method, callback){
 
 function eraseTaskTime(id){
 	var task = loadTaskTime(id);
-	if(task.alwaysVisible){
-		task.resetTime();
-		saveTaskTime(id, task);
-	}else{
-		localStorage.removeItem(id);
-		showNotification("Task Erase", "The task time ["+id+"] has been erased!", EnumButtons.CLEAN);
+	if(task != null){
+		if(task.alwaysVisible){
+			task.resetTime();
+			saveTaskTime(id, task);
+		}else{
+			localStorage.removeItem(id);
+			showNotification("Task Erase", "The task time ["+id+"] has been erased!", EnumButtons.CLEAN);
+		}
 	}
 }
 
 var timerFunction = setInterval(function(){	
 	var hasStarted = false;
-	for(var id in localStorage){
+	for(var id in getLocalStorageTasks()){
 		var task = loadTaskTime(id);
 		//as the update time occurs every second, there is a map containing the elements and their changes
 		if(task && task.taskNumber && CONFIGS.waitingCallback != task.taskNumber){
@@ -316,9 +360,21 @@ var timerFunction = setInterval(function(){
 	setIcon(hasStarted);
 },1000);
 
+//get localStorage with all tasks
+function getLocalStorageTasks(){	
+	var localTasks = $.extend({}, localStorage);
+	delete localTasks[CONFIGS_ID];
+	return localTasks;
+}
+
+
+
+//SAVE AND LOAD OF TASKTIME
+
 function saveTaskTime(id, task){
 	localStorage.setItem(id, stringifyJSONTimeTracker(task));
 }
+
 function loadTaskTime(id){
 	var task = localStorage.getItem(id);
 	if(task){
@@ -327,6 +383,16 @@ function loadTaskTime(id){
 		task = null;
 	}
 	return task;
+}
+
+//CONFIG  TIME TRACKER
+
+function loadConfigTimeTracker(){
+	return parseJSONTimeTracker(localStorage.getItem(CONFIGS_ID));
+}
+
+function saveConfigTimeTracker(){
+	localStorage.setItem(CONFIGS_ID, stringifyJSONTimeTracker(CONFIGS));
 }
 
 function setIcon(hasTimeRunning){
