@@ -176,6 +176,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			sendResponse(true);
 			break;
 		case "sendTimeTaskTime":
+			//serve para o pause, que na realidade envia o tempo e pausa o tempo local
 			var id = request.data[idTask];
 			var task = loadTaskTime(id);
 			console.log("sendTimeTaskTime", task);

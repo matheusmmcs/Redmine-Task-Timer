@@ -61,7 +61,7 @@ if(!window.hasPluginTimeTracker){
 						var floatClass = '';//'time-tracker-right';
 						var spanText = '';//'<span>Working time: </span>';
 
-						var html = '<div id="time-tracker-cnt"><div class="'+floatClass+'">'+spanText+'<div id="'+idClock+'" class="clk">'+EnumTimeTrackerMessages.CLOCK+'</div><div id="time-tracker-btns"><a id="'+idStartStop+'" class="'+EnumTimeTrackerState.START_CLASS+'">'+EnumTimeTrackerState.START+'</a><a id="'+idSendTime+'" class="'+EnumTimeTrackerState.SEND_TIME_CLASS+' bt-gray">'+EnumTimeTrackerState.SEND_TIME+'</a><a id="'+idFinish+'" class="'+EnumTimeTrackerState.FINISH_CLASS+' bt-green">'+EnumTimeTrackerState.FINISH+'</a><a id="'+idReset+'" class="'+EnumTimeTrackerState.RESET_CLASS+'">'+EnumTimeTrackerState.RESET+'</a></div><div id="time-tracker-loading" class="hide">Wait...</div></div></div>';
+						var html = '<div id="time-tracker-cnt"><div class="'+floatClass+'">'+spanText+'<div id="'+idClock+'" class="clk">'+EnumTimeTrackerMessages.CLOCK+'</div><div id="time-tracker-btns"><a id="'+idStartStop+'" class="'+EnumTimeTrackerState.START_CLASS+'">'+EnumTimeTrackerState.START+'</a><a id="'+idFinish+'" class="'+EnumTimeTrackerState.FINISH_CLASS+' bt-green">'+EnumTimeTrackerState.FINISH+'</a><a id="'+idReset+'" class="'+EnumTimeTrackerState.RESET_CLASS+'">'+EnumTimeTrackerState.RESET+'</a></div><div id="time-tracker-loading" class="hide">Wait...</div></div></div>';
 						//$contentH2.append(html);
 						$issueTree.before('<div class="working-time"><p><strong>Tempo de Trabalho</strong></p>'+html+'</div><hr/>');
 					}
@@ -180,8 +180,14 @@ if(!window.hasPluginTimeTracker){
 								}
 							});
 						}else{
+							var title = $(".subject h3").html();
 
-							var newTask = new TimeTrackerObject({ taskUrl : window.location.href });
+							var obj = {taskUrl : window.location.href};
+							if(title !== null && title !== undefined && title !== ""){
+								obj['taskName'] = title;
+							}
+
+							var newTask = new TimeTrackerObject(obj);
 							if(newTask.validate()){
 								dataFromBackground("initializeTaskTime", { 'task' : newTask, 'location' : window.location }, function(data){
 									if(data && data.reload){
@@ -197,7 +203,7 @@ if(!window.hasPluginTimeTracker){
 					//method to stop the time when the button is clicked
 					function stopTime(){
 						setButtonStoped();
-						dataFromBackground("stopTaskTime", { 'taskNumber' : numberTask, 'location' : window.location }, function(data){
+						dataFromBackground("sendTimeTaskTime", { 'taskNumber' : numberTask }, function(data){
 							if(data && data.reload){
 								window.location.reload();
 							}

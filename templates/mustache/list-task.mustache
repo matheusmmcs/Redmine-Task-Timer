@@ -18,9 +18,7 @@
 		<a data-id="{{taskNumber}}" class="time-tracker-list-name" href="#" title="Details: {{taskName}}">{{taskNumber}}{{#hasName}}: {{taskNameMin}}{{/hasName}}</a>
 		
 		<div class="time-tracker-btns">	
-			<a title="Finish Task" data-id="{{taskNumber}}" data-started="true" class="bt bt-green pull-right pull-right time-tracker-popup-finish"><span class="glyphicon glyphicon-ok"></span></a>
-
-			<a title="Save Time" data-id="{{taskNumber}}" data-started="true" class="bt bt-gray color-blue pull-right time-tracker-popup-send-time"><span class="glyphicon glyphicon-time"></span></a>
+			<a title="Finish Task" data-id="{{taskNumber}}" data-started="true" class="bt bt-gray pull-right pull-right time-tracker-popup-finish"><span class="glyphicon glyphicon-ok color-blue"></span></a>
 
 			{{#started}}
 				<a title="Pause Task" data-id="{{taskNumber}}" data-started="true" class="bt bt-stop pull-right time-tracker-popup-start-stop"><span class="glyphicon glyphicon-pause"></span></a>

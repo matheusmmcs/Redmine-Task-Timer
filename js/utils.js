@@ -57,6 +57,10 @@ function TimeTrackerObject(data){
 			this.alwaysVisible = changesObj['alwaysVisible'];
 		}
 	}
+	this.resetTimeWithoutStop = function(){
+		this.time = 0;
+		this.dateBackground = undefined;
+	}
 	this.resetTime = function(){
 		this.started = false;
 		this.time = 0;

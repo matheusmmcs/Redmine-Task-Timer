@@ -5,7 +5,7 @@
 			PLAY : 'play',
 			PAUSE : 'pause'
 		}
-		var interval = 500, renderInterval, taskNameSize = 18;
+		var interval = 500, renderInterval, taskNameSize = 24;
 
 		$(window).unload(function(){
 			clearInterval(renderInterval);
@@ -99,18 +99,11 @@
 			if(started == false || started == "false"){
 				dataFromBackground("startTaskTime", { 'taskNumber' : dataid });
 			}else{
-				dataFromBackground("stopTaskTime", { 'taskNumber' : dataid });
+				//stop and submit
+				dataFromBackground("sendTimeTaskTime", { 'taskNumber' : dataid }, function(){
+					renderListTaskTimes();
+				});
 			}
-		});
-
-		$(document).on("click", ".time-tracker-popup-send-time", function(e){
-			e.preventDefault();
-			var $this = $(this);
-			var dataid = $this.attr("data-id");
-
-			dataFromBackground("sendTimeTaskTime", { 'taskNumber' : dataid }, function(){
-				renderListTaskTimes();
-			});
 		});
 
 		$(document).on("click", ".time-tracker-popup-finish", function(e){

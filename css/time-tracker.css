@@ -242,8 +242,8 @@
 #time-tracker-popup .list li {
   display: list-item;
   width: 100%;
-  margin: 5px 0;
-  padding: 5px;
+  margin: 6px 0;
+  padding: 4px;
   list-style-type: none;
   text-align: justify;
   font-weight: bold;
@@ -271,10 +271,9 @@
   color: #357ebd;
 }
 #time-tracker-popup .list li .time-tracker-list-name {
-  overflow: hidden;
-  width: 220px;
+  width: 250px;
   height: 22px;
-  line-height: 35px;
+  line-height: 30px;
   display: inline-block;
 }
 #time-tracker-popup .color-blue {
