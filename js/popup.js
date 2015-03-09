@@ -279,6 +279,11 @@
 						});
 					});
 
+					//to fix chrome in macbook bug
+					if(window.navigator.userAgent.toLowerCase().indexOf('macintosh') != -1){
+						$('body').height($('body').height());
+					}
+
 				},interval);
 			});
 		}

@@ -56,7 +56,13 @@ if(!window.hasPluginTimeTracker){
 					var numberTask = getNumberFromTaskTimeTracker(loc);
 
 					//has time-tracker? case no, insert a html to start/stop timer, and show the time
-					if(!$("#time-tracker-cnt").length){
+					var $issueTracker = $('#issue_tracker_id'), issueTypeValue = $issueTracker.val();
+
+					//is Requisito (73) or Solicitacao (72)
+					var isTypeIssueDontShow = $issueTracker.length != 0 ? (issueTypeValue == "73" || issueTypeValue == "72") : false;
+
+					//if dont have any time tracker and isn't any type of issue blocked and dont have nay issue child, then show the time tracker
+					if(!$("#time-tracker-cnt").length && !isTypeIssueDontShow && !hasIssueTreeForm){
 						//this html is so simple and insert mustache to render they in all pages aren't a good idea
 						var floatClass = '';//'time-tracker-right';
 						var spanText = '';//'<span>Working time: </span>';
