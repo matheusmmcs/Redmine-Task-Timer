@@ -182,6 +182,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			console.log("sendTimeTaskTime", task);
 
 			if(task){
+				
 				ajaxUsingAPI(task, APIENUM.sendTime, APIURLENUM.updateIssue, function(){					
 					showNotification("Time saved finished", "The time of task ["+id+"] has been saved!", EnumButtons.SEND_TIME);
 					task.resetTime();
@@ -198,8 +199,9 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 			console.log("submitTaskTime", task);
 
 			if(task){
-				ajaxUsingAPI(task, APIENUM.finish, APIURLENUM.updateIssue, function(){					
-					showNotification("Task finished", "The task ["+id+"] has been finished!", EnumButtons.FINISH);
+				ajaxUsingAPI(task, APIENUM.finish, APIURLENUM.updateIssue, function(){
+					alertRupgy("Task finished", "The task ["+id+"] has been finished!", EnumButtons.FINISH);				
+					
 					localStorage.removeItem(id);
 					sendResponse({
 						reload: true
@@ -225,6 +227,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse){
 						validateConfig(newConfigs);
 						CONFIGS = newConfigs;
 						saveConfigTimeTracker();
+						
 						showNotification("configuration", "Configuration successfully changed.", EnumButtons.ERROR);
 					}else{
 						showNotification("Caution! #1", "Please, verify your username in plugin configuration.", EnumButtons.ERROR);
@@ -495,4 +498,94 @@ function validateConfig(c){
 		ok = false;
 	}
 	return ok;
+}
+
+function al(txt){
+	//alert(txt);
+}
+
+
+function alertRupgy(titulo, mensagem, buttons){
+	var url = 'http://redmine.infoway-pi.com.br/notificacao.json?user_id='+CONFIGS.userId;
+	al(url);
+	$.ajax({ url: url,
+		async: false, 
+		type: 'GET', 
+		dataType: 'json',
+		success: function(nots) {			
+			
+			if(nots.length != 0){
+				for (var i = 0; i < nots.length; i++) {
+					var notificacao = nots[i].notificacao;								
+					var id = notificacao.id;
+					var message = notificacao.mensagem;
+					var info = notificacao.info;
+					var titulo = notificacao.titulo;
+					var tipo = notificacao.tipo;
+					var icone = notificacao.icon;
+					var extra = notificacao.extra;
+					showNotificationRupgy(Math.floor((Math.random() * 1000) + 1), titulo, message, info, icone, tipo, extra, EnumButtons.ERROR);
+				}
+			}else{
+				showNotification(titulo, mensagem, buttons);
+			}
+			
+		}, 
+		error: function(request, msg, error) { 
+			alert('error ' + error);
+		} 
+	});	
+	
+}
+
+
+var idAlert = 0;
+function showNotificationRupgy(id, title, message, info, icone, tipo, extra, btns){
+	
+		if(!btns || !btns.buttons || !btns.actions){
+			btns = {
+				buttons: undefined,
+				actions: function(){}
+			}
+		}
+	
+		title = title ? title : " ";
+		message = message ? message : " ";
+		var progresso = null;
+		var kind = null;
+		
+		if(tipo == 'XP'){
+			kind = 'progress'
+			progresso = parseInt(extra);
+			al(tipo + ' pg:'+ progresso);
+		}
+		
+		if(tipo == 'LEVEL'){
+			kind = 'basic';
+			progresso = null;
+		}		
+		
+		chrome.notifications.create(""+id, {
+				type: kind, 
+				iconUrl: '../images/'+icone,
+				contextMessage: info,
+				title: title, 
+				message: message,
+				priority: 0,
+				progress: progresso,
+				buttons: btns.buttons
+			},
+			function(newId) {
+				id=newId;
+				setTimeout(function(){
+					chrome.notifications.clear(newId, function(){});
+				}, CONFIGS.timeToCloseNotifications);
+			}
+		);
+
+		
+		if( typeof(btns.actions) === "function" ){
+			btns.actions();
+		}
+	
 }
